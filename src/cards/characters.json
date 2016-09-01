@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Василий",
+    "imgClass": "vasil"
+  },
+  {
+    "name": "Ундина",
+    "imgClass": "undina"
+  },
+  {
+    "name": "Сэр Генри",
+    "imgClass": "henry"
+  },
+  {
+    "name": "Хуан",
+    "imgClass": "huan"
+  },
+  {
+    "name": "Мария",
+    "imgClass": "mary"
+  },
+  {
+    "name": "Майкл",
+    "imgClass": "michael"
+  },
+  {
+    "name": "Романа",
+    "imgClass": "romana"
+  },
+  {
+    "name": "Сара",
+    "imgClass": "sara"
+  },
+  {
+    "name": "Теодора",
+    "imgClass": "theodora"
+  },
+  {
+    "name": "Брат Захария",
+    "imgClass": "zachary"
+  }
+]

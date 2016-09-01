@@ -1,0 +1,44 @@
+%character-picture{
+  background: transparent no-repeat center;
+  background-size: cover;
+}
+.undina{
+  @extend %character-picture;
+  background-image: url('../assets/undina.jpg');
+}
+.henry{
+  @extend %character-picture;
+  background-image: url('../assets/henry.jpg');
+}
+.huan{
+  @extend %character-picture;
+  background-image: url('../assets/huan.jpg');
+}
+.mary{
+  @extend %character-picture;
+  background-image: url('../assets/mary.jpg');
+}
+.michael{
+  @extend %character-picture;
+  background-image: url('../assets/michael.jpg');
+}
+.romana{
+  @extend %character-picture;
+  background-image: url('../assets/romana.jpg');
+}
+.sara{
+  @extend %character-picture;
+  background-image: url('../assets/sara.jpg');
+}
+.theodora{
+  @extend %character-picture;
+  background-image: url('../assets/theodora.jpg');
+}
+.vasil{
+  @extend %character-picture;
+  background-image: url('../assets/vasil.jpg');
+}
+.zachary{
+  @extend %character-picture;
+  background-image: url('../assets/zachary.jpg');
+}

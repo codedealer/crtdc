@@ -1,0 +1,72 @@
+%item-picture{
+  background: transparent no-repeat center;
+  background-size: cover;
+}
+.cup{
+  @extend %item-picture;
+  background-image: url('../assets/cards/cup.jpg');
+}
+.key{
+  @extend %item-picture;
+  background-image: url('../assets/cards/key.jpg');
+}
+.bagcup{
+  @extend %item-picture;
+  background-image: url('../assets/cards/bag.jpg');
+}
+.bagkey{
+  @extend %item-picture;
+  @extend .bagcup;
+}
+.monocle{
+  @extend %item-picture;
+  background-image: url('../assets/cards/monocle.jpg');
+}
+.coat{
+  @extend %item-picture;
+  background-image: url('../assets/cards/coat.jpg');
+}
+.tome{
+  @extend %item-picture;
+  background-image: url('../assets/cards/tome.jpg');
+}
+.privilege{
+  @extend %item-picture;
+  background-image: url('../assets/cards/privilege.jpg');
+}
+.sextant{
+  @extend %item-picture;
+  background-image: url('../assets/cards/sextant.jpg');
+}
+.ring{
+  @extend %item-picture;
+  background-image: url('../assets/cards/ring.jpg');
+}
+.mirror{
+  @extend %item-picture;
+  background-image: url('../assets/cards/mirror.jpg');
+}
+.pearl{
+  @extend %item-picture;
+  background-image: url('../assets/cards/pearl.jpg');
+}
+.seal{
+  @extend %item-picture;
+  background-image: url('../assets/cards/seal.jpg');
+}
+.dagger{
+  @extend %item-picture;
+  background-image: url('../assets/cards/dagger.jpg');
+}
+.knives{
+  @extend %item-picture;
+  background-image: url('../assets/cards/knives.jpg');
+}
+.gloves{
+  @extend %item-picture;
+  background-image: url('../assets/cards/gloves.jpg');
+}
+.whip{
+  @extend %item-picture;
+  background-image: url('../assets/cards/whip.jpg');
+}

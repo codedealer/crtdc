@@ -1,0 +1,99 @@
+$control-bar-height: 300px;
+
+$chat-input-container-height: 30px;
+$chat-width: 300px;
+
+$info-width: 300px;
+$assistant-deck-bar-height: 30px;
+$assistant-occupation-header-height: 40px;
+$bottom-shelf-height: $assistant-occupation-header-height;
+$top-shelf-height: $bottom-shelf-height;
+
+$item-card-height: $control-bar-height - $bottom-shelf-height - $top-shelf-height - 20px;
+$board-player-min-width: 125px;
+$context-field-container-width: calc(100% - 2 * 150px);
+
+$slider-item-width: 170;
+$card-width: $slider-item-width - 20px;
+
+$system-gray: #aeaeae;
+$dark-gray: #666;
+$game-blue: darkturquoise;
+$black: #151412;
+$yellow: #fefebe;
+$fullyellow: #dbcb2e;
+$orange: #c46d29;
+
+$active: #a675b3;
+$select: #bf932d;
+$selected: #e0ba38;
+
+$order-primary: #1a96ba;
+$brotherhood-primary: #ca2f3a;
+$bannerless: #27A32B;
+
+%purple-button {
+  display: inline-block;
+  cursor: pointer;
+  margin-top: ($bottom-shelf-height - $chat-input-container-height) / 2;
+  outline-width: 0px;
+  height: $chat-input-container-height;
+  text-decoration: none;
+  color: #a675b3;
+  text-align: center;
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(111, 55, 125, 0.8), inset 0 -1px 0px rgba(63, 59, 113, 0.2), 0 9px 16px 0 rgba(0, 0, 0, 0.3), 0 4px 3px 0 rgba(0, 0, 0, 0.3), 0 0 0 1px #150a1e;
+  background-image: linear-gradient(#3b2751, #271739);
+  text-shadow: 0 0 21px rgba(223, 206, 228, 0.5), 0 -1px 0 #311d47;
+  &:hover{
+    color: #caadd2;
+    text-shadow: 0 0 21px rgba(223, 206, 228, 0.5), 0 0 10px rgba(223, 206, 228, 0.4), 0 0 2px #2a153c;
+  }
+}
+
+%purple-button-active{
+  box-shadow: 0 9px 16px 0 rgba(0, 0, 0, 0.1), 0 0 0 1px #170c22, 0 2px 1px 0 rgba(121, 65, 135, 0.5), inset 0 0 4px 3px rgba(15, 8, 22, 0.2);
+    background-image: linear-gradient(#1f132e, #311d47);
+    text-shadow: 0 0 21px rgba(223, 206, 228, 0.5), 0 0 10px rgba(223, 206, 228, 0.4), 0 0 2px #2a153c;
+    color: #e4e3ce;
+}
+
+@keyframes flicker {
+  from {
+    color: #a675b3;
+    text-shadow: 0 0 21px rgba(223, 206, 228, 0.5), 0 0 10px rgba(223, 206, 228, 0.4), 0 0 2px #2a153c;
+  }
+  to {
+    color: #caadd2;
+    text-shadow: 0 0 21px rgba(223, 206, 228, 0.5), 0 -1px 0 #311d47;
+  }
+}
+
+%flicker {
+  animation: flicker .5s infinite alternate;
+  &:hover{
+    animation: none;
+  }
+}
+
+@keyframes slow-flash{
+  from{
+    border-color: $select;
+    box-shadow: 0 0 7px fade-out($select, 0.1);
+  }
+  to{
+    border-color: $selected;
+    box-shadow: 0 0 13px $selected;
+  }
+}
+
+@keyframes slow-flash-duel{
+  from{
+    border-color: darken($order-primary, 10);
+    box-shadow: 0 0 7px fade-out(darken($order-primary, 10), 0.1);
+  }
+  to{
+    border-color: $order-primary;
+    box-shadow: 0 0 13px $order-primary;
+  }
+}

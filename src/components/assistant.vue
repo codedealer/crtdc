@@ -1,0 +1,206 @@
+<template>
+  <div class="i-assistant-container">
+    <div class="i-assistant-deck-bar">
+      <span>Колода: {{ deck }}</span>
+      <span>Жетоны: {{ tokens }}</span>
+    </div>
+    <div class="i-assistant-player-container" :class="allegianceClass">
+      <div class="i-assistant-allegiance">
+        <h3 v-if="showAllegiance">{{ target.allegiance.title }}</h3>
+      </div>
+      <div class="i-assistant-stats-container">
+        <div class="i-assistant-cards">{{ target.hand.length }}</div>
+        <div class="i-assistant-pic" :class="target.character.imgClass"></div>
+        <div class="i-assistant-tokens">{{ target.tokens }}</div>
+      </div>
+      <div class="i-assistant-player-name">{{ target.character.name }}</div>
+    </div>
+    <div class="i-assistant-occupation-container">
+      <header>{{ showOccupation ? target.occupation.name : '???' }}</header>
+      <div class="i-assistant-occupation-description" v-if="showOccupation">{{ target.occupation.description }}</div>
+    </div>
+  </div>
+</template>
+
+<script>
+import rulecoordinator from '../world/rulecoordinator'
+import {brotherhood, order} from '../cards/allegiance'
+
+export default {
+  props: ['options'],
+  data () {
+    return {
+      target: this.options.players[this.options.selfIndex],
+      classObject: {
+        'default-canvas': true,
+        [brotherhood.cssClass]: false,
+        [order.cssClass]: false
+      }
+    }
+  },
+  computed: {
+    showAllegiance () {
+      if (this.target.uid === this.options.user.uid) return true;
+
+      return this.options.players[this.options.selfIndex].known.findIndex(p => p.uid === this.target.uid) >= 0;
+    },
+    allegianceClass () {
+      let co = Object.assign({}, this.classObject);
+
+      if (this.showAllegiance) {
+        co[this.target.allegiance.cssClass] = true;
+      }
+
+      return co;
+    },
+    deck () { return rulecoordinator.deck.length },
+    tokens () { return rulecoordinator.tokens },
+    showOccupation () {
+      if (this.target.uid === this.options.user.uid) return true;
+
+      return this.target.occupation.disclosed;
+    }
+  },
+  events: {
+    'as.change-target' (player) {
+      this.target = player || this.options.players[this.options.selfIndex];
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+@import '../settings.scss';
+@import '../cards/characters.scss';
+
+.i-assistant-container{
+  overflow: hidden;
+  .brotherhood {
+    background: url(../assets/brotherhood.jpg) no-repeat center;
+    background-size: contain;
+  }
+  .order {
+    background: url(../assets/order.jpg) no-repeat center;
+    background-size: contain;
+  }
+}
+
+.i-assistant-deck-bar{
+  height: $assistant-deck-bar-height;
+  box-shadow: 0 0 21px;
+  text-shadow: 1px 1px 4px #000;
+  padding: 0px 15px;
+  line-height: $assistant-deck-bar-height;
+  text-align: center;
+  background: url(../assets/wood.jpg) repeat-x, sienna;
+  span:nth-child(1){
+    margin-right: 30px;
+  }
+}
+
+.i-assistant-player-container{
+  height: $control-bar-height - $assistant-deck-bar-height;
+}
+
+.i-assistant-stats-container{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-content: center;
+  align-items: center;
+  margin-top: 35px;
+  > div {
+    order: 0;
+    flex: 0 1 auto;
+    align-self: auto;
+  }
+}
+
+%assist-font-rules{
+  color: $yellow;
+  text-shadow: 3px 3px 18px #000, -3px -3px 18px #000;
+  text-align: center;
+  line-height: 64px;
+  font-size: 40px;
+}
+
+.i-assistant-cards{
+  height: 64px;
+  width: 80px;
+  background: url(../assets/cards-icon.png) no-repeat center;
+  @extend %assist-font-rules;
+}
+
+.i-assistant-pic{
+  height: 90px;
+  width: 90px;
+  border: 4px solid $dark-gray;
+  clip-path: circle(50% at 50% 50%);
+  border-radius: 50%;
+}
+
+.i-assistant-tokens{
+  background: url(../assets/token.jpg) no-repeat center, rgba(0,0,0,0.5);
+  background-size: cover;
+  width: 65px;
+  height: 64px;
+  clip-path: circle(50% at 50% 50%);
+  border-radius: 50%;
+  margin-right: 3px;
+  border: 3px solid $dark-gray;
+  @extend %assist-font-rules;
+  line-height: 60px; /* wtf */
+}
+
+.i-assistant-player-name{
+  color: #eee;
+  margin-top: 25px;
+  font-size: 24px;
+  text-align: center;
+}
+
+.default-canvas{
+  background: url(../assets/default-canvas.jpg) no-repeat center;
+  background-size: contain;
+}
+
+.i-assistant-allegiance {
+  height: 30px;
+  h3 {
+    margin: 0;
+    padding: 12px;
+    text-align: center;
+    /*text-shadow: 1px 2px 3px #444;*/
+  }
+}
+
+.order .i-assistant-allegiance h3 {
+  color: $order-primary;
+}
+
+.brotherhood .i-assistant-allegiance h3 {
+  color: $brotherhood-primary;
+}
+
+.i-assistant-occupation-container{
+  transform: translateY(-$assistant-occupation-header-height);
+  box-shadow: 0 0 21px;
+  cursor: pointer;
+  transition: all .3s ease-in-out;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%,rgba(0,0,0,0.35) 100%), url(../assets/canvas.jpg);
+  &:hover{
+    transform: translateY(-100%);
+  }
+  header{
+    height: $assistant-occupation-header-height;
+    padding-top: 4px;
+    font-size: 24px;
+  }
+}
+
+.i-assistant-occupation-description{
+  padding: 0 30px 30px;
+  font-size: 12px;
+}
+</style>
