@@ -2,14 +2,8 @@ import {hash} from '../core/utils'
 
 export default class Card {
   constructor (meta) {
-    this.name = meta.name;
-    this.description = meta.description;
-    this.token = meta.token;
+    Object.assign(this, meta);
     this._mark = '';
-
-    this.winnable = false;
-    this.battle = false;
-    this.special = false;
 
     this.uid = hash(this.token + this._mark);
 

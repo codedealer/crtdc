@@ -1,5 +1,5 @@
 import Card from './card'
-import meta from './cards-config.json'
+import * as cardsConfig from './cards-config.js'
 import EventEmitter from '../core/eventemitter'
 
 const Marks = {
@@ -11,27 +11,30 @@ let deck = [];
 
 export default {
   build (playersNum) {
-    let starterPack = [new Card(meta[0]), new Card(meta[1]), new Card(meta[2]), new Card(meta[3])];
+    let starterPack = [new Card(cardsConfig.cup), new Card(cardsConfig.key), new Card(cardsConfig.bagcup), new Card(cardsConfig.bagkey)];
 
     starterPack = starterPack.map(card => {
       card.mark = Marks.RED;
       return card;
     });
 
-    let deck = [new Card(meta[0]), new Card(meta[1])];
-    let cup = new Card(meta[0]);
-    let key = new Card(meta[1]);
+    let deck = [new Card(cardsConfig.cup), new Card(cardsConfig.key)];
+    let cup = new Card(cardsConfig.cup);
+    let key = new Card(cardsConfig.key);
 
     key.mark = Marks.GREEN;
     cup.mark = Marks.GREEN;
 
     let greens = [key, cup];
 
-    let specials = meta.slice(4).map(item => {
-      let card = new Card(item);
-      card.special = true;
-      return card;
-    });
+    let specials = [];
+
+    let excludeList = ['cup', 'key', 'bagcup', 'bagkey'];
+    for (let [token, cardMeta] of Object.entries(cardsConfig)) {
+      if (excludeList.find(x => token === x)) continue;
+
+      specials.push(new Card(cardMeta));
+    }
 
     let rest = [...deck, ...specials];
 
