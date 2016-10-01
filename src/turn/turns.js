@@ -153,8 +153,19 @@ export function* trade () {
       selectable: false
     });
 
+    let handSelectOptions = {
+      numCards: 1,
+      dismissable: cardToTradeIn.negotiable
+    }
+
+    if (cardToTradeIn.token === 'bagcup' || cardToTradeIn.token === 'bagkey') {
+      handSelectOptions.excludeCriteria = function (card) {
+        return !(card.token === 'bagcup' || card.token === 'bagkey');
+      }
+    }
+
     let resultHandSelect = yield new Promise((resolve, reject) => {
-      this.em.emit('hand.select', {numCards: 1, dismissable: true}, result => resolve(result));
+      this.em.emit('hand.select', handSelectOptions, result => resolve(result));
     });
 
     if (resultHandSelect === true) resultHandSelect = false; //trade declined

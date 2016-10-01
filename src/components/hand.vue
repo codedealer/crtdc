@@ -35,7 +35,7 @@ export default {
     return {
       em: EventEmitter.getInstance(),
       selectable: false,
-      options: [],
+      options: {},
       selectedCards: [],
       cardsToSelect: 0,
       callback: null
@@ -44,6 +44,11 @@ export default {
   events: {
     'card.selected' (card) {
       if (this.selectable !== true) return;
+
+      if (this.options.excludeCriteria && !this.options.excludeCriteria(card)) {
+        this.em.emit('log', 'a', 'Нельзя выбрать эту карту в настоящий момент');
+        return;
+      }
 
       this.selectedCards.push(card);
 
