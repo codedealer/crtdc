@@ -193,6 +193,23 @@ export function* trade () {
 
     if (this.self.uid === caller.uid) this.em.emit('deck.card.got', calleeCard);
     if (this.self.uid === callee.uid) this.em.emit('deck.card.got', callerCard);
+
+    let skipSpecials = callerCard.token === 'mirror' || calleeCard.token === 'mirror';
+
+    if (calleeCard.onTrade) {
+      if (skipSpecials) {
+        if (this.isCaller()) this.em.emit('log', 'a', 'Свойство карты отменено');
+      } else {
+        yield * calleeCard.onTrade.call(this);
+      }
+    }
+    if (callerCard.onTrade) {
+      if (skipSpecials) {
+        if (this.self.uid === callee.uid) this.em.emit('log', 'a', 'Свойство карты отменено');
+      } else {
+        yield * callerCard.onTrade.call(this);
+      }
+    }
   }
 
   if (this.isCaller()) return yield this.turns.makeVote('turn');
