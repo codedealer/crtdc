@@ -16,12 +16,7 @@ export let bagcup = {
   negotiable: true,
   description: 'Обменяв этот предмет, можете взять карту из колоды предметов. Если колода предметов пуста, этот саквояж считается кубком. Нельзя обменять на другой саквояж. ',
   onTrade: function * () {
-    let {caller, callee} = this.getContractorsFromPool();
-
-    //find who ownes the card now
-    //the other must've traded it
-    let traderIsCaller = caller.hand.find(card => card.token === 'bagcup') === undefined;
-    let trader = traderIsCaller ? caller : callee;
+    let trader = this.turns.getTrader('bagcup');
 
     this.em.emit('deck.special_exchange', trader, 'Саквояж (Кубок)');
 
@@ -35,12 +30,7 @@ export let bagkey = {
   negotiable: true,
   description: 'Обменяв этот предмет, можете взять карту из колоды предметов. Если колода предметов пуста, этот саквояж считается ключом. Нельзя обменять на другой саквояж. ',
   onTrade: function * () {
-    let {caller, callee} = this.getContractorsFromPool();
-
-    //find who ownes the card now
-    //the other must've traded it
-    let traderIsCaller = caller.hand.find(card => card.token === 'bagkey') === undefined;
-    let trader = traderIsCaller ? caller : callee;
+    let trader = this.turns.getTrader('bagkey');
 
     this.em.emit('deck.special_exchange', trader, 'Саквояж (Ключ)');
 

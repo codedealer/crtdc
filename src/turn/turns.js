@@ -40,6 +40,15 @@ export function makeVote (subject, callee = false) {
   });
 }
 
+export function getTrader (token) {
+  let {caller, callee} = this.getContractorsFromPool();
+
+  //find who ownes the card now
+  //the other must've traded it
+  let traderIsCaller = caller.hand.find(card => card.token === token) === undefined;
+  return traderIsCaller ? caller : callee;
+}
+
 export function callerSelectPlayers (numPlayers, exclude = [], dismissable = false) {
   return new Promise((resolve, reject) => {
     if (!this.isCaller()) return resolve();
