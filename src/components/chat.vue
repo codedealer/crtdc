@@ -121,6 +121,9 @@ export default {
       if (player === false || player.uid === this.user.uid) logger.se(`Вы получили ${card.name}`);
       else if (player !== false) logger.g(`${player.character.name} получает карту`);
     });
+    this.em.on('deck.special_exchange', (trader, cardName) => {
+      logger.g(`${trader.character.name} обменял ${cardName}`);
+    });
     this.em.on('gm.hand_limit.result', player => {
       if (player === false) return;
       if (player.uid === this.user.uid) logger.a('Вы превысили лимит карт!');
