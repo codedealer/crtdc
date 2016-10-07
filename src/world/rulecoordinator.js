@@ -21,6 +21,7 @@ let handLimits = {
 
 export default {
   deck,
+  occupationPool: [],
   tokens: 0,
   canGiveToken () { return this.tokens > 0 },
   playersNum: 0,
@@ -84,7 +85,18 @@ export default {
       serverExtensions[uid] = se;
     }
 
-    return this.init(gameObject.seed, playersInGame, serverExtensions);
+    let result = this.init(gameObject.seed, playersInGame, serverExtensions);
+
+    let serverOccupationPool = [];
+    for (let token of Object.keys(gameObject.occupationPool)) {
+      serverOccupationPool.push(token);
+    }
+
+    this.occupationPool = serverOccupationPool.map(token => {
+      return occupations[token];
+    });
+
+    return result;
   },
   checkHandLimit (players) {
     // all good -> false
@@ -105,6 +117,8 @@ export default {
     return result;
   },
   isWin (players, playersToWin, winParty) {
+    if (winParty === 'seal') return this._isSealWin(players, playersToWin[0]);
+
     let winItemName = order.org === winParty ? order.token : brotherhood.token;
     let canUseBag = this.deck.length === 0;
     let bagName = `bag${winItemName}`;
@@ -126,6 +140,23 @@ export default {
           return previous + 1;
         } else return previous;
       }, prev);
+    }, 0);
+
+    return itemsNum >= requiredNum;
+  },
+  _isSealWin (players, caller) {
+    let permittedTokens = [order.token, brotherhood.token];
+    let canUseBag = this.deck.length === 0;
+    let requiredNum = 3;
+
+    if (canUseBag) {
+      permittedTokens = [...permittedTokens, ...['bag' + order.token, 'bag' + brotherhood.token]];
+    }
+
+    let itemsNum = caller.hand.reduce((prev, card) => {
+      if (permittedTokens.some(token => token === card.token)) return prev + 1;
+
+      return prev;
     }, 0);
 
     return itemsNum >= requiredNum;
@@ -178,6 +209,8 @@ export default {
     }
 
     shuffle(occupationsArr, seed);
+
+    this.occupationPool = occupationsArr.slice(playersNum);
 
     return occupationsArr.slice(0, playersNum);
   },

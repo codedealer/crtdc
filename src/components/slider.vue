@@ -12,6 +12,7 @@
 
 <script>
 import itemCard from './item-card.vue'
+import occupationCard from './occupation-card.vue'
 
 export default {
   props: ['cards', 'componentName'],
@@ -20,7 +21,8 @@ export default {
       displacement: 0,
       status: {
         selectable: false
-      }
+      },
+      options: {}
     }
   },
   computed: {
@@ -49,8 +51,10 @@ export default {
       this.displacement = 0;
       this.status.selectable = false;
     },
-    'slider.select' () {
+    'slider.select' (options) {
+      this.options = options;
       this.status.selectable = true;
+      this.$broadcast('card.init', options);
     },
     'slider.selected' () {
       this.status.selectable = false;
@@ -62,7 +66,8 @@ export default {
     }
   },
   components: {
-    itemCard
+    itemCard,
+    occupationCard
   }
 }
 </script>

@@ -5,6 +5,9 @@ import * as Turns from './turns'
 import Pool from './pool'
 import co from 'co'
 
+let contractorCaller = {};
+let contractorCallee = {};
+
 export default {
   queue: {},
   pool: null,
@@ -82,18 +85,25 @@ export default {
   },
   isCaller () { return this.queue.peekUid() === this.self.uid },
   find (uid) { return this.players.find(x => x.uid === uid) },
-  getContractorsFromPool () {
-    let caller = {};
-    let callee = {};
+  getContractorsFromPool (flushCache = false) {
+    if (flushCache === true) {
+      let caller = {};
+      let callee = {};
 
-    for (let [uid, actionObject] of Object.entries(this.pool.pool)) {
-      if (actionObject.action === 'trade') {
-        caller = this.find(uid);
-        callee = this.find(actionObject.callee);
-        break;
+      for (let [uid, actionObject] of Object.entries(this.pool.pool)) {
+        if (actionObject.action === 'trade') {
+          caller = this.find(uid);
+          callee = this.find(actionObject.callee);
+          break;
+        }
       }
+
+      contractorCaller = caller;
+      contractorCallee = callee;
+
+      return {caller, callee};
     }
 
-    return {caller, callee};
+    return {caller: contractorCaller, callee: contractorCallee};
   }
 }

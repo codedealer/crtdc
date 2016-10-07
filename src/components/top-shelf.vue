@@ -11,6 +11,8 @@
 
 <script>
 import EventEmitter from '../core/eventemitter'
+import rulecoordinator from '../world/rulecoordinator'
+import {order, brotherhood} from '../cards/allegiance'
 
 export default {
   props: ['player'],
@@ -32,10 +34,23 @@ export default {
     canTrade () { return this.myTurn && this.player.hand.length },
     canDuel () { return this.myTurn },
     canWin () {
-      if (this.player.hand
-        .findIndex(x => x.token === this.player.allegiance.token) === -1) return false;
+      if (this.myTurn) {
+        let canUseBag = rulecoordinator.deck.length === 0;
+        let permittedTokens = [this.player.allegiance.token];
 
-      return this.myTurn;
+        if (canUseBag) permittedTokens.push('bag' + this.player.allegiance.token);
+
+        if (this.player.hand.find(x => x.token === 'seal')) {
+          permittedTokens = [order.token, brotherhood.token];
+          if (canUseBag) {
+            permittedTokens = [...permittedTokens, ...['bag' + order.token, 'bag' + brotherhood.token]];
+          }
+        }
+
+        return this.player.hand.some(
+          x => permittedTokens.findIndex(token => x.token === token) !== -1
+          );
+      } else return false;
     }
   },
   methods: {

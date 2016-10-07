@@ -7,6 +7,7 @@ import GameStatus from './status'
 import settings from './settings'
 import Timer from './timer'
 import {seed} from '../core/utils'
+import * as occupations from '../cards/occupations'
 
 export default class World {
   constructor (user) {
@@ -63,6 +64,7 @@ export default class World {
         turn: GameStatus.PREGAME,
         players: rulecoordinator.init(this.seed, allowedPlayers),
         deck: rulecoordinator.prepDeck(this.seed, allowedPlayers).rest,
+        occupationPool: rulecoordinator.occupationPool,
         pool
       }
 
@@ -159,8 +161,33 @@ export default class World {
         this.em.emit('gm.game_result', rulecoordinator.isWin(this.players, playersToWin, winParty));
       });
 
+      this.em.on('gm.occupation_pool.get', () => {
+        this.em.emit('gm.occupation_pool.got', rulecoordinator.occupationPool);
+      });
+
+      this.em.on('gm.change_ocupation', (player, newOccupation) => {
+        this.em.emit('gm.sync', { [player.uid]: {
+          [newOccupation.token]: false
+        } }, 'occupations');
+        this.em.emit('gm.sync', {[newOccupation.token]: null}, 'occupationPool');
+      });
+
+      this.em.on('sv.occupation.change', (uid, data) => {
+        let newOccupationToken = Object.keys(data)[0];
+        let player = this.players.find(x => x.uid === uid);
+
+        if (newOccupationToken !== player.occupation.token) {
+          rulecoordinator.occupationPool = rulecoordinator.occupationPool.filter(x => x.token !== newOccupationToken);
+
+          let newOccupation = occupations[newOccupationToken];
+
+          player.occupation = newOccupation;
+          this.em.emit('gm.occupation.changed', player);
+        }
+      });
+
       this.em.on('sv.profile.change', (uid, data) => {
-        let player = this.players.find(x => x.uid === uid)
+        let player = this.players.find(x => x.uid === uid);
         if (player.tokens < data.tokens) {
           rulecoordinator.tokens--;
           player.tokens = data.tokens;
@@ -174,6 +201,7 @@ export default class World {
 
       this.server.subToPool(this.name);
       this.server.subToProfiles(this.name);
+      this.server.subToOccupations(this.name);
 
       this.started = true;
 

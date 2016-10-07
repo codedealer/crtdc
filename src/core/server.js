@@ -136,6 +136,12 @@ export default class Server {
       deck[card.uid] = i;
     });
 
+    let occupationPool = {};
+
+    gameObject.occupationPool.forEach((card, i) => {
+      occupationPool[card.token] = true;
+    });
+
     dataToUpdate[gameName] = {
       seed: gameObject.seed,
       turn: gameObject.turn,
@@ -143,7 +149,8 @@ export default class Server {
       profiles,
       hands,
       occupations,
-      deck
+      deck,
+      occupationPool
     }
 
     this.db.ref().update(dataToUpdate);
@@ -166,6 +173,11 @@ export default class Server {
   subToProfiles (gameName) {
     this.db.ref(`${gameName}/profiles`).on('child_changed', (snapshot) => {
       this.em.emit('sv.profile.change', snapshot.key, snapshot.val());
+    });
+  }
+  subToOccupations (gameName) {
+    this.db.ref(`${gameName}/occupations`).on('child_changed', (snapshot) => {
+      this.em.emit('sv.occupation.change', snapshot.key, snapshot.val());
     });
   }
   pubToPool (gameName, uid, actionObject) {

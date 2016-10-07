@@ -54,6 +54,8 @@
 </template>
 
 <script>
+import tc from '../turn/turncoordinator'
+
 export default {
   props: ['options'],
   ready () {
@@ -114,12 +116,30 @@ export default {
 
       return { ['duel-score-' + ind]: true }
     },
-    addToken(player) {
+    addToken (player) {
       if (!this.interactable) return;
       if (player.busy !== false || player.tokens === 0) return;
 
       player.busy = true;
       this.$dispatch('duel.spend-token', player);
+    },
+    getPlayer (uid) {
+      let player;
+      let role = 'attack';
+      if (this.callerDuel.uid === uid) player = this.callerDuel;
+      else if (this.calleeDuel.uid === uid) {
+        player = this.calleeDuel;
+        role = 'defence';
+      } else {
+        player = this.callerDuel.supporters.find(x => x.uid === uid);
+        role = 'supAttack';
+        if (player === undefined) {
+          player = this.calleeDuel.supporters.find(x => x.uid === uid);
+          role = 'supDefence';
+        }
+      }
+
+      return {player, role};
     }
   },
   events: {
@@ -129,13 +149,7 @@ export default {
       this.showScore = true;
     },
     'duel.spent-token' (uid) {
-      let player;
-      if (this.callerDuel.uid === uid) player = this.callerDuel;
-      else if (this.calleeDuel.uid === uid) player = this.calleeDuel;
-      else {
-        player = this.callerDuel.supporters.find(x => x.uid === uid);
-        if (player === undefined) player = this.calleeDuel.supporters.find(x => x.uid === uid);
-      }
+      let player = this.getPlayer(uid).player;
 
       player.tokens--;
       player.busy = false;
@@ -154,6 +168,29 @@ export default {
       } else winner = false;
 
       this.$dispatch('duel-result-calculated', winner);
+    },
+    'duel-player-ready' (uid) {
+      tc.turns.updatePool('duel.player.ready');
+    },
+    'duel-card-toggle' ({card, isSelected}) {
+      tc.turns.updatePool('duel.card', false, {card: card.uid, isSelected});
+    },
+    'gm-duel-card' ({uid, card, isSelected}) {
+      let {player, role} = this.getPlayer(uid);
+      let cardObj = player.hand.find(x => x.uid === card);
+
+      if (!cardObj.onDuel) return;
+
+      let score = player.optional;
+      player.optional = cardObj.onDuel(score, role, isSelected);
+
+      if (isSelected) {
+        if (score !== player.optional) {
+          this.options.em.emit('log', 'g', `${player.name} использует ${cardObj.name}`);
+        } else if (this.options.self.uid === uid) {
+          this.options.em.emit('log', 'a', 'Эта карта не имеет эффекта в данный момент');
+        }
+      }
     }
   }
 }

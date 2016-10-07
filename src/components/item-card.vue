@@ -15,25 +15,29 @@ export default {
     return {
       status: {
         selectable: false,
-        selected: false
+        selected: false,
+        disabled: false
       }
     }
   },
   methods: {
     onClick () {
-      //if (!this.status.selectable || this.status.selected) return;
-
-      // this.status.selected = true;
-      // this.status.selectable = false;
-      if (this.status.selected) return;
+      if (this.status.disabled) return;
       this.$dispatch('card.selected', this.card);
     }
   },
   events: {
     'card.selected.confirmed' (card) {
-      if (card.uid === this.card.uid) this.status.selected = true;
+      if (card.uid === this.card.uid) this.status.selected = !this.status.selected;
     },
-    'card.reset' () { this.status.selected = false; }
+    'card.reset' () { this.status.disabled = false; },
+    'card.init' (options) {
+      if (options.isDuel) {
+        if (!this.card.onDuel) this.status.disabled = true;
+      } else if (options.excludeCriteria && !options.excludeCriteria(this.card)) {
+        this.status.disabled = true;
+      }
+    }
   }
 }
 </script>
@@ -42,13 +46,14 @@ export default {
 @import '../settings.scss';
 @import '../cards/items.scss';
 
-  .selectable .item-card{
+  .selectable :not(.disabled) .item-card{
     animation: slow-flash .5s infinite alternate;
     cursor: pointer;
   }
 
-  .selected .item-card{
+  .selectable .selected .item-card{
     border-color: $selected;
+    animation: none;
     box-shadow: 2px 2px 8px fade-out($selected, 0.1);
   }
 

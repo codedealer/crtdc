@@ -1,6 +1,6 @@
 <template>
   <div class="card-selector-container">
-    <slider :cards="cards" :component-name="'itemCard'"></slider>
+    <slider :cards="cards" :component-name="cardType"></slider>
   </div>
 </template>
 
@@ -27,11 +27,13 @@ export default {
       cardsToSelect: 0,
       selectable: false,
       callback: null,
-      options: {}
+      options: {},
+      cardType: 'itemCard'
     }
   },
   methods: {
     onInit (cards, options, callback) {
+      this.cardType = options.type || 'itemCard';
       this.cards = cards;
       this.options = options;
       this.$broadcast('slider.reset');

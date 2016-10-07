@@ -15,6 +15,7 @@ export default {
   compiled () {
     this.em.on('board.card-selector.init', () => { this.showCardSelector = true; });
     this.em.on('board.duel-display.init', (duelOptions, cb) => {
+      duelOptions.em = this.em;
       this.duelOptions = duelOptions;
       this.duelCallback = cb;
       this.duelResult = {};
@@ -36,7 +37,15 @@ export default {
     this.em.on('duel.spent_token', player => {
       this.$broadcast('duel.spent-token', player.uid);
     });
-
+    this.em.on('duel.player.ready', player => {
+      this.$broadcast('duel-player-ready', player.uid);
+    });
+    this.em.on('duel.card.toggle', (card, isSelected) => {
+      this.$broadcast('duel-card-toggle', {card, isSelected});
+    });
+    this.em.on('gm.duel.card', options => {
+      this.$broadcast('gm-duel-card', options);
+    });
     this.em.on('turn.new', () => {
       this.showCardSelector = false;
       this.showDuelDisplay = false;

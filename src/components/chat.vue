@@ -124,6 +124,17 @@ export default {
     this.em.on('deck.special_exchange', (trader, cardName) => {
       logger.g(`${trader.character.name} обменял ${cardName}`);
     });
+
+    this.em.on('deck.all_cards.known', (trader, receiver) => {
+      if (this.user.uid === receiver.uid) {
+        logger.se(`${trader.character.name} видел ваши карты`);
+      } else if (this.user.uid === trader.uid) {
+        logger.se(`вы изучаете карты ${receiver.character.name}`);
+      } else {
+        logger.g(`${trader.character.name} изучает карты ${receiver.character.name}`);
+      }
+    });
+
     this.em.on('gm.hand_limit.result', player => {
       if (player === false) return;
       if (player.uid === this.user.uid) logger.a('Вы превысили лимит карт!');
@@ -162,8 +173,25 @@ export default {
       logger.g(`${winner.character.name} узнает тайную организацию ${loser.character.name}`);
     });
 
-    this.em.on('gm.win', winners => {
-      logger.a(`${winners[0].allegiance.title} побеждает!`);
+    this.em.on('gm.change_ocupation.query', () => {
+      logger.se('Хотите ли вы выбрать новую профессию?');
+    });
+    this.em.on('gm.swap_ocupation.query', () => {
+      logger.se('Хотите обменяться профессиями?');
+    });
+    this.em.on('gm.occupation.changed', player => {
+      if (this.user.uid === player.uid) logger.se(`Ваша новая профессия ${player.occupation.name}`);
+      else logger.g(`${player.character.name} сменил профессию`);
+    });
+
+    this.em.on('gm.win', (winners, sealWin) => {
+      if (sealWin) {
+        if (winners.length > 1) logger.a('Печать проигрывает!');
+        else logger.a(`${winners[0].character.name} побеждает с помощью печати!`);
+      } else {
+        logger.a(`${winners[0].allegiance.title} побеждает!`);
+      }
+
       if (winners.some(x => x.uid === this.user.uid)) logger.se('Вы победили!');
       else logger.se('Вы проиграли!');
     });

@@ -30,6 +30,32 @@ export default {
         this.em.emit('modal.show', new ModalOK('Отклонить'));
       }
     });
+
+    this.em.on('duel.begin', (caller, callee, self) => {
+      this.cardsToSelect = 99;
+      this.selectedCards = [];
+      this.options = {
+        isDuel: true,
+        caller,
+        callee,
+        self
+      };
+      this.selectable = true;
+      this.$broadcast('slider.select', this.options);
+
+      this.em.once('modal.exec', (arg) => {
+        if (this.selectable === false || arg === null) return;
+
+        this.selectable = false;
+        this.$broadcast('slider.selected');
+        this.em.emit('duel.player.ready', this.options.self); //handle this
+      });
+      this.em.emit('modal.show', new ModalOK('Готов'));
+    });
+
+    this.em.on('turn.new', () => {
+      this.$broadcast('slider.reset');
+    });
   },
   data () {
     return {
@@ -50,9 +76,18 @@ export default {
         return;
       }
 
-      this.selectedCards.push(card);
+      let cardIndex = this.selectedCards.findIndex(c => c.uid === card.uid);
+      let selected = true;
+      if (cardIndex === -1) {
+        this.selectedCards.push(card);
+      } else {
+        this.selectedCards.splice(cardIndex, 1);
+        selected = false;
+      }
 
-      if (this.selectedCards.length === this.cardsToSelect) {
+      if (this.options.isDuel) {
+        this.em.emit('duel.card.toggle', card, selected);
+      } else if (this.selectedCards.length === this.cardsToSelect) {
         this.selectable = false;
         this.$broadcast('slider.selected');
         if (this.options.dismissable) this.em.emit('modal.dismiss');

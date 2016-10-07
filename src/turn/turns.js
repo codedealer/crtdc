@@ -40,6 +40,65 @@ export function makeVote (subject, callee = false) {
   });
 }
 
+export function _giveCard (newPoolObject) {
+  let caller, callee, card, cardIndex;
+
+  caller = this.find(newPoolObject.uid);
+  callee = this.find(newPoolObject.actionObject.callee);
+  cardIndex = caller.hand.findIndex(card => card.uid === newPoolObject.actionObject.args.card);
+
+  //card has already been given
+  if (cardIndex === -1) return;
+
+  card = caller.hand[cardIndex];
+
+  //give this card to callee
+  caller.hand.splice(cardIndex, 1);
+  callee.hand.push(card);
+}
+
+export function give (newPoolObject) {
+  // if (newPoolObject.uid) {
+  //   this._giveCard(newPoolObject);
+  // }
+
+  //check if everyone completed
+  let voted = 0;
+  let poolSize = 0;
+  for (let [i, poolObject] of Object.entries(this.pool.pool)) {
+    poolSize += 1;
+    if (poolObject.action === 'give_sext') {
+      voted += 1;
+      this.turns._giveCard({uid: i, actionObject: poolObject});
+    }
+  }
+
+  return voted === poolSize;
+}
+
+export function duelVote (newPoolObject) {
+  //if update happened
+  if (newPoolObject.uid &&
+    newPoolObject.actionObject.action === 'duel.card') {
+    //card used
+    this.em.emit('gm.duel.card', Object.assign({uid: newPoolObject.uid}, newPoolObject.actionObject.args));
+  }
+
+  //check if everyone completed
+  let voted = 0;
+  let poolSize = 0;
+  for (let [i, poolObject] of Object.entries(this.pool.pool)) {
+    poolSize += 1;
+    if (poolObject.action === 'duel.player.ready') {
+      voted += 1;
+    } else if (poolObject.action === 'duel.card' && !newPoolObject.uid) {
+      this.em.emit('gm.duel.card', Object.assign({uid: i}, poolObject.args));
+    }
+  }
+
+  return voted === poolSize;
+}
+
 export function getTrader (token) {
   let {caller, callee} = this.getContractorsFromPool();
 
@@ -204,19 +263,21 @@ export function* trade () {
     if (this.self.uid === callee.uid) this.em.emit('deck.card.got', callerCard);
 
     let skipSpecials = callerCard.token === 'mirror' || calleeCard.token === 'mirror';
+    //cache contractors
+    this.getContractorsFromPool(true);
 
-    if (calleeCard.onTrade) {
+    if (callerCard.onTrade) {
       if (skipSpecials) {
         if (this.isCaller()) this.em.emit('log', 'a', 'Свойство карты отменено');
       } else {
-        yield * calleeCard.onTrade.call(this);
+        yield * callerCard.onTrade.call(this);
       }
     }
-    if (callerCard.onTrade) {
+    if (calleeCard.onTrade) {
       if (skipSpecials) {
         if (this.self.uid === callee.uid) this.em.emit('log', 'a', 'Свойство карты отменено');
       } else {
-        yield * callerCard.onTrade.call(this);
+        yield * calleeCard.onTrade.call(this);
       }
     }
   }
@@ -259,6 +320,7 @@ export function* duel () {
     uid: caller.uid,
     name: caller.character.name,
     tokens: caller.tokens,
+    hand: caller.hand,
     base: 1,
     permanent: 0,
     optional: 0,
@@ -270,6 +332,7 @@ export function* duel () {
     uid: callee.uid,
     name: callee.character.name,
     tokens: callee.tokens,
+    hand: callee.hand,
     base: 1,
     permanent: 0,
     optional: 0,
@@ -282,6 +345,7 @@ export function* duel () {
       uid: player.uid,
       name: player.character.name,
       tokens: player.tokens,
+      hand: player.hand,
       busy: false,
       base: 1,
       permanent: 0,
@@ -295,10 +359,10 @@ export function* duel () {
     }
   });
 
-  this.em.emit('duel.begin', callerDuel, calleeDuel);
+  this.em.emit('duel.begin', callerDuel, calleeDuel, this.self);
 
-  this.em.emit('modal.show', new ModalOK('Готов'));
-  yield this.turns.once('modal.exec');
+  //this.em.emit('modal.show', new ModalOK('Готов'));
+  yield this.pool.expectAny(this.turns.duelVote);
 
   this.em.emit('duel.ready');
   yield this.turns.makeVote('duel.ready');
@@ -311,9 +375,38 @@ export function* duel () {
 
   if (winner === false) {
     //draw
-    this.em.emit('deck.draw', caller);
-    yield * this.turns.resolveHandLimit();
-  } else {
+    //check for ring
+    let ringBearer;
+    ringBearer = caller.hand.some(card => card.token === 'ring') ? caller : false;
+    if (!ringBearer) {
+      ringBearer = callee.hand.some(card => card.token === 'ring') ? callee : false;
+    }
+
+    let useRing = false;
+    if (ringBearer) {
+      let ringPoolObject;
+      if (this.self.uid === ringBearer.uid) {
+        this.em.emit('log', 'se', 'Вы можете использовать кольцо, чтобы победить в дуэли. Использовать?');
+        this.em.emit('modal.show', new ModalYesNo('Да', 'Нет'));
+        let choiceResult = yield this.turns.once('modal.exec');
+
+        ringPoolObject = yield this.turns.updatePool('ring', false, {choice: choiceResult});
+      } else {
+        ringPoolObject = yield this.pool.expect();
+      }
+
+      useRing = ringPoolObject.actionObject.args.choice;
+    }
+
+    if (useRing) {
+      this.em.emit('log', 'g', `${ringBearer.character.name} использует кольцо!`);
+      winner = ringBearer;
+    } else {
+      this.em.emit('deck.draw', caller);
+      yield * this.turns.resolveHandLimit();
+    }
+  }
+  if (winner !== false) {
     let loser = winner.uid === caller.uid ? callee : caller;
     let prizePoolObject;
     if (winner.uid === this.self.uid) {
@@ -409,16 +502,24 @@ export function* win () {
   if (this.isCaller()) {
     let selectedPlayers;
     playersToWin = [caller];
-    while (selectedPlayers !== true) {
-      //make dismissable
-      selectedPlayers = yield this.turns.callerSelectPlayers(1, playersToWin, true);
+    let useSeal = false;
+    //promt player to use seal
+    if (this.self.hand.some(card => card.token === 'seal')) {
+      this.em.emit('log', 'a', 'Вы можете объявить победу используя гербовую печать. Вы используете печать?');
+      this.em.emit('modal.show', new ModalYesNo('Да', 'Нет'));
+      useSeal = yield this.turns.once('modal.exec');
+    }
+    if (!useSeal) {
+      while (selectedPlayers !== true) {
+        selectedPlayers = yield this.turns.callerSelectPlayers(1, playersToWin, true);
 
-      if (selectedPlayers !== true) {
-        playersToWin.push(selectedPlayers[0]);
-        this.em.emit('log', 'se', `${selectedPlayers[0].character.name} выбран`);
+        if (selectedPlayers !== true) {
+          playersToWin.push(selectedPlayers[0]);
+          this.em.emit('log', 'se', `${selectedPlayers[0].character.name} выбран`);
+        }
       }
     }
-    poolObject = yield this.turns.updatePool('call_winners', false, objectify(playersToWin));
+    poolObject = yield this.turns.updatePool('call_winners', useSeal, objectify(playersToWin));
   } else {
     poolObject = yield this.pool.expect(caller.uid);
   }
@@ -428,50 +529,70 @@ export function* win () {
     playersToWin.push(this.find(playerUid));
   }
 
+  let sealWin = poolObject.actionObject.callee;
+
+  if (sealWin) this.em.emit('log', 'g', `${playersToWin[0].character.name} использует гербовую печать!`);
+
   let msg = '';
   let trophies = 0;
-  for (let i = 0; i < playersToWin.length; i++) {
-    if (playersToWin[i].uid !== caller.uid) {
-      if (this.self.known.find(x => x.uid === playersToWin[i].uid) === undefined &&
-          playersToWin[i].uid !== this.self.uid) {
-        this.self.known.push(playersToWin[i]);
+  if (sealWin) {
+    let winnables = ['key', 'bagkey', 'cup', 'bagcup'];
+    trophies = caller.hand.reduce((prev, card) => {
+      if (winnables.some(token => token === card.token)) return prev + 1;
+
+      return prev;
+    }, 0);
+
+    this.em.emit('log', 'g', `${caller.character.name} обладает ${trophies} ценными предметами (в том числе саквояжи)`);
+  } else {
+    for (let i = 0; i < playersToWin.length; i++) {
+      if (playersToWin[i].uid !== caller.uid) {
+        if (this.self.known.find(x => x.uid === playersToWin[i].uid) === undefined &&
+            playersToWin[i].uid !== this.self.uid) {
+          this.self.known.push(playersToWin[i]);
+        }
+      }
+      if (playersToWin[i].allegiance.org === caller.allegiance.org) {
+        msg = `${playersToWin[i].character.name} из организации ${caller.allegiance.title}`;
+        trophies = playersToWin[i].hand.reduce((prev, card) => {
+          return card.token === caller.allegiance.token ? prev + 1 : prev;
+        }, 0);
+
+        if (trophies > 0) {
+          if (caller.allegiance.org === 'order') msg += ` обладает ${trophies} ` + (trophies === 1 ? 'ключом' : 'ключами');
+          else msg += ` обладает ${trophies} ` + (trophies === 1 ? 'кубком' : 'кубками');
+        }
+        if (playersToWin[i].hand.find(x => {
+          x.token === playersToWin[i].allegiance.token === 'key' ? 'bagkey' : 'bagcup'
+        })) {
+          msg += trophies > 0 ? ' а также саквояжем' : 'обладает саквояжем';
+        }
+
+        this.em.emit('log', 'g', msg);
+      } else {
+        this.em.emit('log', 'a', `О, нет! ${playersToWin[i].character.name} принадлежит к другой организации!`);
+        break;
       }
     }
-    if (playersToWin[i].allegiance.org === caller.allegiance.org) {
-      msg = `${playersToWin[i].character.name} из организации ${caller.allegiance.title}`;
-      trophies = playersToWin[i].hand.reduce((prev, card) => {
-        return card.token === caller.allegiance.token ? prev + 1 : prev;
-      }, 0);
+  } //else
 
-      if (trophies > 0) {
-        if (caller.allegiance.org === 'order') msg += ` обладает ${trophies} ` + (trophies === 1 ? 'ключом' : 'ключами');
-        else msg += ` обладает ${trophies} ` + (trophies === 1 ? 'кубком' : 'кубками');
-      }
-      if (playersToWin[i].hand.find(x => {
-        x.token === playersToWin[i].allegiance.token === 'key' ? 'bagkey' : 'bagcup'
-      })) {
-        msg += trophies > 0 ? ' а также саквояжем' : 'обладает саквояжем';
-      }
-
-      this.em.emit('log', 'g', msg);
-    } else {
-      this.em.emit('log', 'a', `О, нет! ${playersToWin[i].character.name} принадлежит к другой организации!`);
-      break;
-    }
-  }
-
+  let winParty = sealWin ? 'seal' : caller.allegiance.org;
   let resultPromise = this.turns.once('gm.game_result');
-  this.em.emit('gm.try_win', playersToWin, caller.allegiance.org);
+  this.em.emit('gm.try_win', playersToWin, winParty);
   let result = yield resultPromise;
 
   let winners = [];
-  if (result) {
-    winners = this.players.filter(player => player.allegiance.org === caller.allegiance.org);
+  if (sealWin) {
+    winners = result ? [caller] : this.players.filter(p => p.uid !== caller.uid);
   } else {
-    winners = this.players.filter(player => player.allegiance.org !== caller.allegiance.org);
+    if (result) {
+      winners = this.players.filter(player => player.allegiance.org === caller.allegiance.org);
+    } else {
+      winners = this.players.filter(player => player.allegiance.org !== caller.allegiance.org);
+    }
   }
 
-  this.em.emit('gm.win', winners);
+  this.em.emit('gm.win', winners, sealWin);
   this.em.emit('modal.show', new ModalOK('Рестарт'));
   yield this.turns.once('modal.exec');
 

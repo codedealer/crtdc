@@ -22,6 +22,14 @@ export default {
     let current = this.pointer === 0 ? this.length - 1 : this.pointer - 1;
     return this.buffer[current];
   },
+  peekNext () {
+    return this.buffer[this.pointer];
+  },
+  peekPrev () {
+    let current = this.pointer === 0 ? this.length - 1 : this.pointer - 1;
+    let prev = current === 0 ? this.length - 1 : current - 1;
+    return this.buffer[prev];
+  },
   reset () {
     this.pointer = 0;
   }
