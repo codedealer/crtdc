@@ -117,6 +117,7 @@ header, h1, h2, h3, h4 {
 .icon-arrows-ccw:before { content: '\e801'; }
 .icon-flag-checkered:before { content: '\f11e'; }
 .icon-shield:before { content: '\f132'; }
+.icon-certificate:before { content: '\f0a3'; }
 #game-container{
   display: flex;
   flex-direction: column;
