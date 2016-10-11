@@ -148,6 +148,10 @@ export default class World {
 
         player.hand.push(card);
         this.em.emit('deck.card.got', card, player);
+        //sync deck
+        if (player.uid === this.user.uid) {
+          this.em.emit('gm.sync', {[card.uid]: null}, 'deck');
+        }
       });
       this.em.on('gm.hand_limit.check', () => {
         this.em.emit('gm.hand_limit.result', rulecoordinator.checkHandLimit(this.players));
