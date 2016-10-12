@@ -19,6 +19,7 @@
       <header>{{ showOccupation ? target.occupation.name : '???' }}</header>
       <div class="i-assistant-occupation-description" v-if="showOccupation">{{ target.occupation.description }}</div>
     </div>
+    <button class="i-assistant-occupation-button" :class="occupationStatus" title="{{occupationTitle}}" v-show="showOccupation"><i class="icon-certificate"></i></button>
   </div>
 </template>
 
@@ -35,6 +36,11 @@ export default {
         'default-canvas': true,
         [brotherhood.cssClass]: false,
         [order.cssClass]: false
+      },
+      occupationStatusObject: {
+        available: false,
+        active: false,
+        activated: false
       }
     }
   },
@@ -59,6 +65,27 @@ export default {
       if (this.target.uid === this.options.user.uid) return true;
 
       return this.target.occupation.disclosed;
+    },
+    occupationStatus () {
+      let o = Object.assign({}, this.occupationStatusObject);
+
+      o.available = this.target.uid === this.options.user.uid
+      ? this.target.occupation.availability
+      : false;
+
+      return o;
+    },
+    occupationTitle () {
+      let s = this.occupationStatus;
+      let d = this.target.occupation.disclosed;
+
+      if (!s.available && !d) return 'Нельзя активировать в данный момент';
+
+      if (s.available && !d) return 'Активировать профессию';
+
+      if (s.active) return 'Эффект активен';
+
+      if (s.activated) return 'Профессия была активирована';
     }
   },
   events: {
@@ -75,6 +102,7 @@ export default {
 
 .i-assistant-container{
   overflow: hidden;
+  position: relative;
   .brotherhood {
     background: url(../assets/brotherhood.jpg) no-repeat center;
     background-size: contain;
@@ -196,6 +224,46 @@ export default {
     height: $assistant-occupation-header-height;
     padding-top: 4px;
     font-size: 24px;
+  }
+}
+
+.i-assistant-occupation-button{
+  position: absolute;
+  top: $control-bar-height - 36px;
+  font-size: 24px;
+  right: 0;
+  padding: 0;
+  margin: 0;
+  cursor: not-allowed;
+  color: $dark-gray;
+  background: none;
+  border: none;
+  outline: none;
+  text-shadow: 0px 0px 3px #000;
+  &.available{
+    animation: occupation-flick .5s infinite alternate;
+    cursor: pointer;
+  }
+  &.active{
+    animation: none;
+    color: $active;
+    cursor: default;
+  }
+  &.activated{
+    animation: none;
+    color: $black;
+    cursor: default;
+  }
+}
+
+@keyframes occupation-flick {
+  from {
+    color: $active;
+    text-shadow: 0 0 21px rgba(76, 7, 76, 0.8), 0 0 2px #2a153c;
+  }
+  to {
+    color: lighten($active, 8);
+    text-shadow: 0 0 21px rgba(118, 14, 150, 0.8), 0 0px 2px #311d47;
   }
 }
 
