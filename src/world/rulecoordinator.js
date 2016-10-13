@@ -74,7 +74,7 @@ export default {
       playersInGame.push(new Player(uid, Status.READY));
 
       let token = Object.keys(gameObject.occupations[uid]).shift();
-      let o = occupations[token];
+      let o = Object.assign({}, occupations[token]);
       o.disclosed = gameObject.occupations[uid][token];
 
       let se = {
