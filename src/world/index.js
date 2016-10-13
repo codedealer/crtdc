@@ -185,7 +185,7 @@ export default class World {
 
           let newOccupation = occupations[newOccupationToken];
 
-          player.occupation = newOccupation;
+          player.occupation = Object.assign({}, newOccupation);
           this.em.emit('gm.occupation.changed', player);
         }
       });

@@ -205,7 +205,7 @@ export default {
 
     let occupationsArr = [];
     for (let occupation of Object.values(occupations)) {
-      occupationsArr.push(occupation);
+      occupationsArr.push(Object.assign({}, occupation));
     }
 
     shuffle(occupationsArr, seed);
