@@ -302,6 +302,9 @@ export let guard = {
     if (role === 'supAttack' || role === 'supDefence') return score + 1;
 
     return score;
+  },
+  onDisclose (player) {
+    this.em.emit('duel.occupation.disclosed', player);
   }
 }
 
@@ -340,6 +343,9 @@ export let thug = {
   onDuel (role, score) {
     if (!this.disclosed || role !== 'attack') return score;
     return score + 1;
+  },
+  onDisclose (player) {
+    this.em.emit('duel.occupation.disclosed', player);
   }
 }
 
@@ -386,5 +392,8 @@ export let master = {
   onDuel (role, score) {
     if (!this.disclosed || role !== 'defence') return score;
     return score + 1;
+  },
+  onDisclose (player) {
+    this.em.emit('duel.occupation.disclosed', player);
   }
 }

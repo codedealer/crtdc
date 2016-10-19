@@ -72,6 +72,10 @@ export default {
     this.em.on('duel.active_players.get', () => {
       this.em.emit('duel.active_players.got', this.duelOptions.activeSupporters);
     });
+    this.em.on('duel.occupation.disclosed', player => {
+      if (!this.showDuelDisplay) return;
+      this.$broadcast('duel-occupation-disclosed', player);
+    });
     this.em.on('gm.duel.card', options => {
       this.$broadcast('gm-duel-card', options);
     });

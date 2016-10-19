@@ -199,6 +199,12 @@ export default {
           this.options.em.emit('log', 'a', 'Эта карта не имеет эффекта в данный момент');
         }
       }
+    },
+    'duel-occupation-disclosed' (duelist) {
+      if (!this.showScore || !this.interactable) return;
+
+      let {player, role} = this.getPlayer(duelist.uid);
+      player.optional = duelist.occupation.onDuel(role, player.optional);
     }
   }
 }
