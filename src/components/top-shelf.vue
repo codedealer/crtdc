@@ -20,21 +20,25 @@ export default {
     this.em.on('turn.new', info => {
       this.action = '';
       if (info.uid === this.player.uid) this.myTurn = true;
+      else this.myTurn = false;
     });
+    this.em.on('gm.restrict.turns', () => { this.globalTurn = false });
+    this.em.on('gm.allow.turns', () => { this.globalTurn = true });
   },
   data () {
     return {
       myTurn: false,
+      globalTurn: true,
       action: '',
       em: EventEmitter.getInstance()
     }
   },
   computed: {
-    canSpy () { return this.myTurn },
-    canTrade () { return this.myTurn && this.player.hand.length },
-    canDuel () { return this.myTurn },
+    canSpy () { return this.myTurn && this.globalTurn },
+    canTrade () { return this.myTurn && this.player.hand.length && this.globalTurn },
+    canDuel () { return this.myTurn && this.globalTurn },
     canWin () {
-      if (this.myTurn) {
+      if (this.myTurn && this.globalTurn) {
         let canUseBag = rulecoordinator.deck.length === 0;
         let permittedTokens = [this.player.allegiance.token];
 

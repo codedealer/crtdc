@@ -32,6 +32,8 @@ export default {
     });
 
     this.em.on('duel.begin', (caller, callee, self) => {
+      if (self === undefined) return;
+
       this.cardsToSelect = 99;
       this.selectedCards = [];
       this.options = {
@@ -48,7 +50,7 @@ export default {
 
         this.selectable = false;
         this.$broadcast('slider.selected');
-        this.em.emit('duel.player.ready', this.options.self); //handle this
+        this.em.emit('duel.player.ready', this.options.self);
       });
       this.em.emit('modal.show', new ModalOK('Готов'));
     });

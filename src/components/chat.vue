@@ -16,6 +16,7 @@
 import Logger from '../logger'
 import config from '../../package.json'
 import EventEmitter from '../core/eventemitter'
+import * as cards from '../cards/cards-config'
 
 export default {
   props: ['players', 'user'],
@@ -48,7 +49,8 @@ export default {
                 'turn.action.trade_result',
                 'turn.action.duel',
                 'turn.action.give',
-                'turn.action.win'], ({uid, actionObject}) => {
+                'turn.action.win',
+                'occupation.card.request'], ({uid, actionObject}) => {
       let callerCharacter = this.players.find(x => x.uid === uid);
       let callee = this.players.find(x => x.uid === actionObject.callee);
 
@@ -100,6 +102,15 @@ export default {
           }
 
           if (this.user.uid === callerCharacter.uid) logger.se('Выберите членов организации, которые обладают предметами, необходимыми для победы');
+          break;
+        case 'occupation.request_card':
+          let cardRequested;
+          let cardToken = actionObject.args.card;
+
+          if (cards.hasOwnProperty(cardToken)) cardRequested = cards[cardToken];
+          else return;
+
+          logger.g(`${callerCharacter.character.name}: ${callee.character.name}, Пользуясь правом дипломата, требую передать мне ${cardRequested.name}`);
           break;
         default:
           logger.g('Что-то произошло, но никто ничего не понял');

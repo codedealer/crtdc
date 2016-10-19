@@ -2,6 +2,7 @@ import Server from '../core/server'
 import EventEmitter from '../core/eventemitter'
 import Player from '../player'
 import rulecoordinator from './rulecoordinator'
+import turncoordinator from '../turn/turncoordinator'
 import Status from '../player/status'
 import GameStatus from './status'
 import settings from './settings'
@@ -132,6 +133,7 @@ export default class World {
 
       this.em.on('pool.write', this.pubToPool.bind(this));
       this.em.on('gm.sync', this.syncGame.bind(this));
+
       this.em.on('gm.get_token', (player) => {
         if (rulecoordinator.canGiveToken()) {
           this.em.emit('gm.sync', {tokens: player.tokens + 1}, `profiles/${player.uid}`);
@@ -141,6 +143,14 @@ export default class World {
         let knownSyncObj = {};
         player.known.forEach(x => { knownSyncObj[x.uid] = true; });
         this.em.emit('gm.sync', { known: knownSyncObj }, `profiles/${player.uid}`);
+      });
+      this.em.on('gm.sync.deck', () => {
+        let cardsObject = {};
+        rulecoordinator.deck.getDeck().forEach((card, i) => {
+          cardsObject[card.uid] = i;
+        });
+        console.dir(cardsObject);
+        this.em.emit('gm.sync', {deck: cardsObject});
       });
       this.em.on('deck.draw', player => {
         let card = rulecoordinator.deck.draw();
@@ -152,6 +162,9 @@ export default class World {
         if (player.uid === this.user.uid) {
           this.em.emit('gm.sync', {[card.uid]: null}, 'deck');
         }
+      });
+      this.em.on('deck.shuffle', () => {
+        this.em.emit('deck.shuffled', rulecoordinator.deck.shuffle(this.seed));
       });
       this.em.on('gm.hand_limit.check', () => {
         this.em.emit('gm.hand_limit.result', rulecoordinator.checkHandLimit(this.players));
@@ -177,7 +190,7 @@ export default class World {
       });
 
       this.em.on('sv.occupation.change', (uid, data) => {
-        let newOccupationToken = Object.keys(data)[0];
+        let [newOccupationToken, newOccupationDisclosed] = Object.entries(data)[0];
         let player = this.players.find(x => x.uid === uid);
 
         if (newOccupationToken !== player.occupation.token) {
@@ -187,7 +200,31 @@ export default class World {
 
           player.occupation = Object.assign({}, newOccupation);
           this.em.emit('gm.occupation.changed', player);
+        } else if (newOccupationDisclosed) {
+          player.occupation.disclosed = true;
+
+          this.em.emit('gm.occupation.disclosed', player);
         }
+      });
+
+      this.em.on('gm.occupation.disclose', player => {
+        if (player.occupation.disclosed) {
+          //this is a recurring activation
+          //bc of data architecture we have to
+          //quickly hide and disclose occupation
+          //to trigger event
+          this.em.emit('gm.sync', { [player.uid]: {
+            [player.occupation.token]: false
+          } }, 'occupations');
+        }
+        this.em.emit('gm.sync', { [player.uid]: {
+          [player.occupation.token]: true
+        } }, 'occupations');
+      });
+
+      this.em.on('gm.occupation.disclosed', player => {
+        player.occupation.availability = false;
+        if (player.occupation.onDisclose) player.occupation.onDisclose.call(turncoordinator, player);
       });
 
       this.em.on('sv.profile.change', (uid, data) => {

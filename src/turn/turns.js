@@ -76,7 +76,7 @@ export function give (newPoolObject) {
   return voted === poolSize;
 }
 
-export function duelVote (newPoolObject) {
+export function duelVote (newPoolObject, activePlayersUid) {
   //if update happened
   if (newPoolObject.uid &&
     newPoolObject.actionObject.action === 'duel.card') {
@@ -84,19 +84,27 @@ export function duelVote (newPoolObject) {
     this.em.emit('gm.duel.card', Object.assign({uid: newPoolObject.uid}, newPoolObject.actionObject.args));
   }
 
-  //check if everyone completed
+  //check if active players completed
   let voted = 0;
-  let poolSize = 0;
   for (let [i, poolObject] of Object.entries(this.pool.pool)) {
-    poolSize += 1;
     if (poolObject.action === 'duel.player.ready') {
-      voted += 1;
+      voted = activePlayersUid.find(uid => uid === i) ? voted + 1 : voted;
     } else if (poolObject.action === 'duel.card' && !newPoolObject.uid) {
       this.em.emit('gm.duel.card', Object.assign({uid: i}, poolObject.args));
     }
   }
 
-  return voted === poolSize;
+  return voted === activePlayersUid.length;
+}
+
+export function cancelableVote (newPoolObject, ...args) {
+  if (!newPoolObject.actionObject || !newPoolObject.actionObject.args.subject) return this.turns.vote(newPoolObject, ...args);
+
+  if (newPoolObject.actionObject.args.subject === 'turn.end') {
+    return this.turns.vote(newPoolObject, 'turn.end', 'all');
+  }
+
+  return this.turns.vote(newPoolObject, ...args);
 }
 
 export function getTrader (token) {
@@ -152,6 +160,10 @@ export function resultDuel () {
   return new Promise((resolve, reject) => {
     this.em.emit('duel.result', result => resolve(result));
   });
+}
+
+export function * skip () {
+  return yield Promise.resolve('turn');
 }
 
 export function* spy () {
@@ -300,21 +312,45 @@ export function* duel () {
 
   this.em.emit('turn.action.duel', poolObject);
 
-  let callee = this.find(poolObject.actionObject.callee);
-  let caller = this.find(poolObject.uid);
+  let {caller, callee} = this.getContractorsFromPool(true, 'duel');
 
-  let playerToSupport = yield this.turns.initDuel({caller, callee, self: this.self});
+  //onDuelBegin hook
+  let role = this.isCaller() ? 'attack' : 'support';
+  if (this.self.uid === callee.uid) role = 'defence';
 
-  if (this.self.uid !== caller.uid && this.self.uid !== callee.uid) {
+  if (this.self.occupation.onDuelBegin &&
+      (!this.self.occupation.disclosed || !this.self.occupation.once) &&
+      this.self.occupation.onDuelBegin(role)) {
+    this.self.occupation.availability = true;
+  }
+
+  let activeSupporters = this.players.filter(x => x.uid !== caller.uid && x.uid !== callee.uid);
+  let playerToSupport = yield this.turns.initDuel({caller, callee, self: this.self, activeSupporters});
+
+  if (playerToSupport !== null) {
     //other declare support
     yield this.turns.makeVote('support', playerToSupport.uid);
   }
 
-  let playersToVote = this.players.filter(x => x.uid !== caller.uid && x.uid !== callee.uid)
-                          .sort((a, b) => { return a.uid === this.self.uid ? -1 : 1 });
+  let playersToVotePromise = this.turns.once('duel.active_players.got');
+  this.em.emit('duel.active_players.get');
+  let playersToVote = yield playersToVotePromise;
+  playersToVote = playersToVote.sort((a, b) => { return a.uid === this.self.uid ? -1 : 1 });
   let playersUidToVote = playersToVote.map(x => x.uid);
 
-  yield this.pool.expectAny(this.turns.vote, 'support', 'some', playersUidToVote);
+  let supportVoteResult = yield this.pool.expectAny(this.turns.cancelableVote, 'support', 'some', playersUidToVote);
+
+  //onDuelBegin unhook
+  if (this.self.occupation.onDuelBegin) {
+    this.self.occupation.availability = false;
+  }
+
+  if (supportVoteResult === 'turn.end') return 'turn';
+
+  playersToVotePromise = this.turns.once('duel.active_players.got');
+  this.em.emit('duel.active_players.get');
+  playersToVote = yield playersToVotePromise;
+  playersUidToVote = playersToVote.map(x => x.uid);
 
   let callerDuel = {
     uid: caller.uid,
@@ -328,6 +364,11 @@ export function* duel () {
     supporters: []
   }
 
+  callerDuel.optional = caller.occupation.onDuel
+                        ? caller.occupation.onDuel('attack', 0)
+                        : 0
+                        ;
+
   let calleeDuel = {
     uid: callee.uid,
     name: callee.character.name,
@@ -339,6 +380,11 @@ export function* duel () {
     busy: false,
     supporters: []
   }
+
+  calleeDuel.optional = callee.occupation.onDuel
+                      ? callee.occupation.onDuel('defence', 0)
+                      : 0
+                      ;
 
   playersToVote.forEach(player => {
     let duelObj = {
@@ -353,25 +399,51 @@ export function* duel () {
     }
 
     if (this.pool.pool[player.uid].callee === caller.uid) {
+      duelObj.optional = player.occupation.onDuel
+                         ? player.occupation.onDuel('supAttack', 0)
+                         : 0
+                         ;
       callerDuel.supporters.push(duelObj);
     } else {
+      duelObj.optional = player.occupation.onDuel
+                         ? player.occupation.onDuel('supDefence', 0)
+                         : 0
+                         ;
       calleeDuel.supporters.push(duelObj);
     }
   });
 
-  this.em.emit('duel.begin', callerDuel, calleeDuel, this.self);
+  playersUidToVote.push(caller.uid, callee.uid);
 
-  //this.em.emit('modal.show', new ModalOK('Готов'));
-  yield this.pool.expectAny(this.turns.duelVote);
+  let selfRef = playersUidToVote.find(x => x === this.self.uid);
+
+  this.em.emit('duel.begin', callerDuel, calleeDuel, selfRef);
+
+  yield this.pool.expectAny(this.turns.duelVote, playersUidToVote);
 
   this.em.emit('duel.ready');
   yield this.turns.makeVote('duel.ready');
   yield this.pool.expectAny(this.turns.vote, 'duel.ready', 'all');
 
+  //onDuelResult hook
+  if (this.self.occupation.onDuelResult &&
+      !this.self.occupation.disclosed) {
+    this.self.occupation.availability = true;
+  }
+
   let winner = yield this.turns.resultDuel();
 
-  yield this.turns.makeVote('duel.result');
-  yield this.pool.expectAny(this.turns.vote, 'duel.result', 'all');
+  //onDuelResult unhook
+  if (this.self.occupation.onDuelResult) {
+    this.self.occupation.availability = false;
+  }
+
+  if (winner !== null) {
+    yield this.turns.makeVote('duel.result');
+  }
+  let duelResultResult = yield this.pool.expectAny(this.turns.cancelableVote, 'duel.result', 'all');
+
+  if (duelResultResult === 'turn.end') return 'turn';
 
   if (winner === false) {
     //draw

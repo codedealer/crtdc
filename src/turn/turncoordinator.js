@@ -85,13 +85,13 @@ export default {
   },
   isCaller () { return this.queue.peekUid() === this.self.uid },
   find (uid) { return this.players.find(x => x.uid === uid) },
-  getContractorsFromPool (flushCache = false) {
+  getContractorsFromPool (flushCache = false, action = 'trade') {
     if (flushCache === true) {
       let caller = {};
       let callee = {};
 
       for (let [uid, actionObject] of Object.entries(this.pool.pool)) {
-        if (actionObject.action === 'trade') {
+        if (actionObject.action === action) {
           caller = this.find(uid);
           callee = this.find(actionObject.callee);
           break;

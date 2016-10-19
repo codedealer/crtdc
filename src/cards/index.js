@@ -1,6 +1,7 @@
 import Card from './card'
 import * as cardsConfig from './cards-config.js'
 import EventEmitter from '../core/eventemitter'
+import shuffle from 'knuth-shuffle-seeded'
 
 const Marks = {
   RED: 'red',
@@ -55,5 +56,26 @@ export default {
     this.length = deck.length;
     if (this.length === 0) this.em.emit('gm.deck.empty');
     return card;
+  },
+  getUnique () {
+    let cards = [];
+    for (let [token, cardMeta] of Object.entries(cardsConfig)) {
+      if (cards.find(card => card.token === token) === undefined) {
+        cards.push(new Card(cardMeta));
+      }
+    }
+
+    return cards;
+  },
+  getDeck () {
+    return deck;
+  },
+  updateDeck (rawDeck) {
+    deck = rawDeck;
+    this.length = rawDeck.length;
+  },
+  shuffle (seed) {
+    shuffle(deck, seed);
+    return deck;
   }
 }

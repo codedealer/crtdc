@@ -30,7 +30,14 @@ export default class {
     if (!this.pool.hasOwnProperty(uid)) throw new Error(`Unexpected player ${uid}`);
 
     this.pool[uid] = actionObject;
-    if (actionObject.action !== false) this.em.emit('pool.read', {uid, actionObject});
+    if (actionObject.action !== false) {
+      //this is bad
+      if (actionObject.action.split('.')[0] === 'occupation') {
+        this.em.emit('pool.read.occupation', {uid, actionObject});
+      } else {
+        this.em.emit('pool.read', {uid, actionObject});
+      }
+    }
   }
   expect (from = false) {
     return new Promise((resolve, reject) => {
@@ -38,6 +45,13 @@ export default class {
         if (from === uid || from === false) {
           resolve({uid, actionObject});
         }
+      });
+    });
+  }
+  expectOccupation () {
+    return new Promise((resolve, reject) => {
+      this.em.once('pool.read.occupation', ({uid, actionObject}) => {
+        resolve({uid, actionObject});
       });
     });
   }

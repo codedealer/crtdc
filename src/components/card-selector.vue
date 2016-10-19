@@ -52,7 +52,7 @@ export default {
         this.callback = callback;
         this.cardsToSelect = options.numCards || 1;
         this.selectable = true;
-        this.$broadcast('slider.select');
+        this.$broadcast('slider.select', options);
       }
     }
   },

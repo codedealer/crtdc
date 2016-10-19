@@ -143,6 +143,9 @@ export default {
     }
   },
   events: {
+    'duel-select-cancel' () {
+      this.status.selectable = false;
+    },
     'duel-begin' ({caller, callee}) {
       this.calleeDuel = callee;
       this.callerDuel = caller;
@@ -159,13 +162,18 @@ export default {
       this.interactable = false;
       this.status['no-score-board'] = true;
       let winner;
-      if (this.callerOverall > this.calleeOverall) {
-        winner = this.options.caller;
-        this.status['win-attack'] = true;
-      } else if (this.callerOverall < this.calleeOverall) {
-        winner = this.options.callee;
-        this.status['win-defence'] = true;
-      } else winner = false;
+
+      if (!this.options.winner) {
+        if (this.callerOverall > this.calleeOverall) {
+          winner = this.options.caller;
+          this.status['win-attack'] = true;
+        } else if (this.callerOverall < this.calleeOverall) {
+          winner = this.options.callee;
+          this.status['win-defence'] = true;
+        } else winner = false;
+      } else {
+        winner = this.options.winner;
+      }
 
       this.$dispatch('duel-result-calculated', winner);
     },
@@ -320,11 +328,15 @@ export default {
     box-shadow: inset 0 0 1px 1px rgba(0,0,0,0.8),
                 3px 3px 15px rgba(0,0,0,0.9);
   }
+  .duel-supporter{
+    overflow: hidden;
+  }
   .duel-supporter-name{
     float: left;
   }
   .duel-supporter-score{
     float: right;
+    height: 16px;
   }
   .duel-supporter-name.self{
     color: darken($active,20);
