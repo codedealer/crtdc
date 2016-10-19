@@ -61,10 +61,14 @@ export default {
         this.occupationBusy = false;
       }
     });
+
+    this.em.on('gm.restrict.turns', () => { this.globalTurn = false });
+    this.em.on('gm.allow.turns', () => { this.globalTurn = true });
   },
   data () {
     return {
       target: this.options.players[this.options.selfIndex],
+      globalTurn: true,
       classObject: {
         'default-canvas': true,
         [brotherhood.cssClass]: false,
@@ -105,7 +109,7 @@ export default {
       let o = Object.assign({}, this.occupationStatusObject);
 
       o.available = this.target.uid === this.options.user.uid
-      ? this.target.occupation.availability
+      ? (this.target.occupation.availability && this.globalTurn)
       : false;
 
       o.active = this.target.occupation.disclosed && this.target.occupation.continuous;
@@ -133,6 +137,7 @@ export default {
   },
   methods: {
     activateOccupation () {
+      if (!this.globalTurn) return;
       if (this.target.uid === this.options.user.uid &&
         this.occupationStatus.available &&
         this.occupationBusy === false) {
