@@ -2,7 +2,8 @@
  <section class="chat-container c-widget">
   <div class="chat-message-box">
     <div v-for="m in messages">
-      <div class="chat-message {{* m.cssClass}}">{{* m.message}}</div>
+      <div class="chat-message {{* m.cssClass}}" v-if="m.sanitize">{{* m.message}}</div>
+      <div class="chat-message {{* m.cssClass}}" v-else>{{{ m.message}}}</div>
     </div>
   </div>
   <div class="chat-input-container">
@@ -218,7 +219,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 @import '../settings.scss';
 
 .chat-container{
@@ -258,5 +259,14 @@ export default {
 }
 .attention{
   color: $orange;
+}
+.chat-name{
+  color: $white;
+}
+.order{
+  color: $order-primary;
+}
+.brotherhood{
+  color: $brotherhood-primary;
 }
 </style>
