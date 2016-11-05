@@ -46,7 +46,7 @@ export default {
       newPlayer.occupation = occupationDeck.shift();
       newPlayer.character = characterDeck.shift();
 
-      if (player.uid === '-KPKHUhMLzpbUOxJ-jZG') newPlayer.character = characters[9];
+      if (player.uid === '-KVkOcIZlsB5_aCp4u6V') newPlayer.character = characters[9];
 
       if (serverExtensions.hasOwnProperty(player.uid)) {
         newPlayer = Object.assign(newPlayer, player, extension, serverExtensions[player.uid]);
