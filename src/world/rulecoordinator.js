@@ -123,6 +123,7 @@ export default {
     let canUseBag = this.deck.length === 0;
     let bagName = `bag${winItemName}`;
     let requiredNum;
+
     if (players.length % 2 === 0) requiredNum = 3;
     else {
       let actualWinnerPartyNum = players.reduce((prev, player) => {
@@ -134,6 +135,8 @@ export default {
 
     if (!playersToWin.every(player => player.allegiance.org === winParty)) return false;
 
+    console.log(winItemName, canUseBag, bagName, requiredNum);
+
     let itemsNum = players.reduce((prev, player) => {
       return player.hand.reduce((previous, card) => {
         if (card.token === winItemName || (canUseBag && card.token === bagName)) {
@@ -141,6 +144,8 @@ export default {
         } else return previous;
       }, prev);
     }, 0);
+
+    console.log(itemsNum);
 
     return itemsNum >= requiredNum;
   },
