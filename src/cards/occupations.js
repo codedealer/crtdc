@@ -364,7 +364,7 @@ export let duelist = {
   once: true,
   onDuelBegin (role) { return role === 'attack' || role === 'defence' },
   onDuel (role, score) {
-    if (this.activated) return score;
+    if (this.activated || !this.disclosed) return score;
     if (role !== 'attack' && role !== 'defence') return score;
 
     this.activated = true;
