@@ -566,7 +566,7 @@ export function* win () {
   //disclose occupation
   if (!caller.occupation.disclosed) {
     caller.occupation.disclosed = true;
-    this.em.emit('gm.occupation.disclosed', caller);
+    //this.em.emit('gm.occupation.disclosed', caller); <- this actually causes special property of occupation to activate
   }
 
   let poolObject;
@@ -617,6 +617,12 @@ export function* win () {
 
     this.em.emit('log', 'g', `${caller.character.name} обладает ${trophies} ценными предметами (в том числе саквояжи)`);
   } else {
+    let chosenPlayersNames = playersToWin.map(player => {
+      return player.character.name;
+    }).join(', ');
+
+    this.em.emit('log', 'g', `Были выбраны следующие игроки: ${chosenPlayersNames}`);
+
     for (let i = 0; i < playersToWin.length; i++) {
       if (playersToWin[i].uid !== caller.uid) {
         if (this.self.known.find(x => x.uid === playersToWin[i].uid) === undefined &&
