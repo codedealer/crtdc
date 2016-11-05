@@ -57,6 +57,9 @@ export default {
         this.duelCallback(this.duelOptions.self);
       }
     });
+    this.em.on('duel.support.cancel', player => {
+      this.$broadcast('duel-select-cancel');
+    });
     this.em.on('duel.decide.winner', winner => {
       this.$broadcast('duel-select-cancel');
 
