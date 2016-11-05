@@ -50,7 +50,7 @@ export default {
         let o = player.occupation;
         if (o.disclosed) return;
 
-        if (o.onTurn || o.onSelfTurn) {
+        if (o.onSelfTurn) {
           o.availability = false;
         }
       });
