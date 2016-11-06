@@ -27,6 +27,9 @@ export default {
   playersNum: 0,
   init (seed, players, serverExtensions = {}) {
     this.playersNum = players.length;
+    //sort order from server is undetermined
+    //so we sort it first for consistency
+    players.sort((a, b) => a.uid > b.uid ? 1 : -1);
     //get turn order
     shuffle(players, seed);
 
