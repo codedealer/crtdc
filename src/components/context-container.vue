@@ -82,6 +82,12 @@ export default {
     this.em.on('gm.duel.card', options => {
       this.$broadcast('gm-duel-card', options);
     });
+    this.em.on('gm.restrict.turns', () => {
+      this.$broadcast('gm-restrict-turns');
+    });
+    this.em.on('gm.allow.turns', () => {
+      this.$broadcast('gm-allow-turns');
+    });
     this.em.on('turn.new', () => {
       this.showCardSelector = false;
       this.showDuelDisplay = false;

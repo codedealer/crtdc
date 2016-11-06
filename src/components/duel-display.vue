@@ -56,6 +56,7 @@
 <script>
 import tc from '../turn/turncoordinator'
 
+let selectableStateCache;
 export default {
   props: ['options'],
   ready () {
@@ -145,6 +146,14 @@ export default {
   events: {
     'duel-select-cancel' () {
       this.status.selectable = false;
+      selectableStateCache = false;
+    },
+    'gm-restrict-turns' () {
+      selectableStateCache = this.status.selectable;
+      this.status.selectable = false;
+    },
+    'gm-allow-turns' () {
+      this.status.selectable = selectableStateCache;
     },
     'duel-begin' ({caller, callee}) {
       this.calleeDuel = callee;
