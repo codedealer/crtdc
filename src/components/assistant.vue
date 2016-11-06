@@ -62,6 +62,8 @@ export default {
       }
     });
 
+    this.em.on('gm.win', () => { this.gameFinished = true; });
+
     this.em.on('gm.restrict.turns', () => { this.globalTurn = false });
     this.em.on('gm.allow.turns', () => { this.globalTurn = true });
   },
@@ -69,6 +71,7 @@ export default {
     return {
       target: this.options.players[this.options.selfIndex],
       globalTurn: true,
+      gameFinished: false,
       classObject: {
         'default-canvas': true,
         [brotherhood.cssClass]: false,
@@ -85,6 +88,7 @@ export default {
   },
   computed: {
     showAllegiance () {
+      if (this.gameFinished) return true;
       if (this.target.uid === this.options.user.uid) return true;
 
       return this.options.players[this.options.selfIndex].known.findIndex(p => p.uid === this.target.uid) >= 0;
@@ -101,6 +105,7 @@ export default {
     deck () { return rulecoordinator.deck.length },
     tokens () { return rulecoordinator.tokens },
     showOccupation () {
+      if (this.gameFinished) return true;
       if (this.target.uid === this.options.user.uid) return true;
 
       return this.target.occupation.disclosed;

@@ -27,10 +27,13 @@ export default {
       this.status['duel-active'] = false;
       this.status['duel-ready'] = false;
     });
+
+    this.em.on('gm.win', () => { this.gameFinished = true; });
   },
   data () {
     return {
       em: EventEmitter.getInstance(),
+      gameFinished: false,
       status: {
         active: false,
         selectable: false,
@@ -43,11 +46,13 @@ export default {
   },
   computed: {
     showAllegiance () {
+      if (this.gameFinished) return true;
       if (this.player.uid === this.user.uid) return true;
 
       return this.user.known.findIndex(x => x.uid === this.player.uid) >= 0;
     },
     showOccupation () {
+      if (this.gameFinished) return true;
       if (this.player.uid === this.user.uid) return true;
 
       return this.player.occupation.disclosed;
