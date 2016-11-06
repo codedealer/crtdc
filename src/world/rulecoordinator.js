@@ -135,17 +135,13 @@ export default {
 
     if (!playersToWin.every(player => player.allegiance.org === winParty)) return false;
 
-    console.log(winItemName, canUseBag, bagName, requiredNum);
-
-    let itemsNum = players.reduce((prev, player) => {
+    let itemsNum = playersToWin.reduce((prev, player) => {
       return player.hand.reduce((previous, card) => {
         if (card.token === winItemName || (canUseBag && card.token === bagName)) {
           return previous + 1;
         } else return previous;
       }, prev);
     }, 0);
-
-    console.log(itemsNum);
 
     return itemsNum >= requiredNum;
   },
