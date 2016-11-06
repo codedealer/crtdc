@@ -7,7 +7,7 @@
     </div>
   </div>
   <div class="chat-input-container">
-    <input type="text" class="chat-input">
+    <input type="text" class="chat-input" placeholder="Не работает">
     <button class="btn">Отправить</button>
   </div>
  </section>
@@ -247,6 +247,8 @@ export default {
   width: 80px;
   float: right;
   font-size: 11px;
+  cursor: not-allowed;
+
 }
 .chat-message{
   margin: 0 5px;
