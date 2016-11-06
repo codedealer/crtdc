@@ -1,5 +1,5 @@
 import firebase from 'firebase'
-import config from './fb-config2.json'
+import config from '../server-config/db-config.json'
 import EventEmitter from './eventemitter'
 import Status from '../player/status'
 
