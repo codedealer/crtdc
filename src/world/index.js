@@ -77,6 +77,7 @@ export default class World {
     else return;
 
     if (uid === this.user.uid) {
+      this.em.emit('gm.user.join', this.name);
       this.status = GameStatus.WAIT;
     }
   }
