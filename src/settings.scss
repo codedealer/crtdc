@@ -1,4 +1,4 @@
-$control-bar-height: 300px;
+$control-bar-height: 280px;
 
 $chat-input-container-height: 30px;
 $chat-width: 300px;
@@ -7,9 +7,9 @@ $info-width: 300px;
 $assistant-deck-bar-height: 30px;
 $assistant-occupation-header-height: 40px;
 $bottom-shelf-height: $assistant-occupation-header-height;
-$top-shelf-height: $bottom-shelf-height;
+$top-shelf-height: 0;
 
-$item-card-height: $control-bar-height - $bottom-shelf-height - $top-shelf-height - 20px;
+$item-card-height: $control-bar-height - $bottom-shelf-height - $top-shelf-height - 40px;
 $board-player-min-width: 125px;
 $context-field-container-width: calc(100% - 2 * 150px);
 

@@ -1,12 +1,10 @@
 <template>
-  <div></div>
   <div class="c-turn-buttons {{* player.allegiance.cssClass }}">
     <button class="c-turn-btn" :class="{'inactive': !canSpy, 'active': action == 'Spy'}" title="шпионаж" @click.stop="chooseAction('Spy')"><i class="icon-search"></i></button>
     <button class="c-turn-btn" :class="{'inactive': !canTrade, 'active': action == 'Trade'}" title="обмен" @click.stop="chooseAction('Trade')"><i class="icon-arrows-ccw"></i></button>
     <button class="c-turn-btn" :class="{'inactive': !canDuel, 'active': action == 'Duel'}" title="дуэль" @click.stop="chooseAction('Duel')"><i class="icon-shield"></i></button>
     <button class="c-turn-btn" :class="{'inactive': !canWin, 'active': action == 'Win'}" title="объявить победу" @click.stop="chooseAction('Win')"><i class="icon-flag-checkered"></i></button>
   </div>
-  <div></div>
 </template>
 
 <script>
@@ -81,8 +79,9 @@ export default {
 @import '../settings.scss';
 
   .c-turn-buttons{
-    margin-top: 0;
+    margin-top: 5px;
     height: $chat-input-container-height;
+    display: inline-block;
     &.order .c-turn-btn{
       background: linear-gradient(to bottom, rgba(19,75,114,1) 0%,rgba(1,26,84,1) 100%);
       color: #44B9CE;

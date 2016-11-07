@@ -241,7 +241,7 @@ export default {
 
 .i-assistant-player-name{
   color: #eee;
-  margin-top: 25px;
+  margin-top: 5px;
   font-size: 24px;
   text-align: center;
 }

@@ -1,14 +1,12 @@
 <template>
   <section class="control-container c-widget">
-    <div class="c-top-shelf-container">
-      <top-shelf v-if="started" :player="self"></top-shelf>
-    </div>
     <div class="c-hand-container">
       <hand v-if="started" :hand="self.hand"></hand>
     </div>
     <div class="c-button-container">
       <button @click="toggleReady" class="toggler" :class="{ 'pressed': ready }" v-show="!started && status !== notConnected">{{readyText}}</button>
       <modal v-show="showModal" :options="modalOptions"></modal>
+      <top-shelf v-if="started" v-show="!showModal" :player="self"></top-shelf>
     </div>
   </section>
 </template>
@@ -119,6 +117,7 @@ export default {
 
 .c-hand-container{
   position: relative;
+  margin-top: 15px;
 }
 
 .c-button-container{
