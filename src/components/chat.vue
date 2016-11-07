@@ -6,15 +6,17 @@
       <div class="chat-message {{* m.cssClass}}" v-else>{{{ m.message}}}</div>
     </div>
   </div>
-  <div class="chat-input-container">
-    <input type="text" class="chat-input" placeholder="Не работает">
-    <button class="btn">Отправить</button>
+  <div class="chat-input-container" :v-show="showChat">
+    <input type="text" class="chat-input" v-model="userMessage" maxlength="140" @keyup.enter.stop="sendUserMessage" tabindex="1">
+    <button class="chat-btn" @click.stop="sendUserMessage">Отправить</button>
   </div>
  </section>
 </template>
 
 <script>
 import Logger from '../logger'
+import Chat from '../logger/chat'
+import {cutUid} from '../core/utils'
 import config from '../../package.json'
 import EventEmitter from '../core/eventemitter'
 import * as cards from '../cards/cards-config'
@@ -25,9 +27,20 @@ export default {
     let logger = new Logger(this.messages);
     logger.s(`Добро пожаловать в игру. Версия ${config.version}`);
 
-    this.em.on('sv.player_join', uid => { logger.s(`${uid} присоединился к игре`) });
-    this.em.on('sv.player_leave', uid => { logger.s(`${uid} вышел`) });
+    this.chat = new Chat(this.em, this.user);
+
+    this.em.on('sv.player_join', uid => {
+      this.showChat = true;
+      logger.s(`${cutUid(uid)} присоединился к игре`);
+    });
+    this.em.on('sv.player_leave', uid => {
+      this.showChat = false;
+      logger.s(`${cutUid(uid)} вышел`);
+    });
+
     this.em.once('gm.start', players => {
+      this.chat.setPlayers(players);
+
       logger.s(`Игра на ${players.length}`);
       if (players.length % 2) logger.s('Сторона в меньшинстве должна собрать только два предмета');
     });
@@ -212,8 +225,20 @@ export default {
   },
   data () {
     return {
+      showChat: false,
+      chat: null,
+      userMessage: '',
       messages: [],
       em: EventEmitter.getInstance()
+    }
+  },
+  methods: {
+    sendUserMessage () {
+      if (this.chat === null || this.showChat === false) return;
+      if (this.userMessage.length === 0 || this.userMessage.length > 140) return;
+
+      this.chat.send(this.userMessage);
+      this.userMessage = '';
     }
   }
 }
@@ -241,14 +266,14 @@ export default {
   height: $chat-input-container-height;
   display: inline;
 }
-.btn{
+.chat-btn{
+  @extend %purple-button;
+  margin-top: 0;
   display: inline;
   height: $chat-input-container-height;
   width: 80px;
   float: right;
   font-size: 11px;
-  cursor: not-allowed;
-
 }
 .chat-message{
   margin: 0 5px;
@@ -262,7 +287,7 @@ export default {
 .attention{
   color: $orange;
 }
-.chat-name{
+.chat-name, .user{
   color: $white;
 }
 .order{

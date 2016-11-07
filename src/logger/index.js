@@ -1,13 +1,6 @@
-function messageFactory(message, cssClass = '', sanitize = false) {
-  return {
-    cssClass,
-    message,
-    sanitize
-  }
-}
-
 import Vue from 'vue';
 import Filter from './filter'
+import {messageFactory} from '../core/utils'
 
 export default class Logger {
   constructor (channel) {
@@ -39,6 +32,9 @@ export default class Logger {
   }
   a (message) {
     this.message(message, 'attention');
+  }
+  u (message) {
+    this.message(message, 'user');
   }
   onEvent (funcName, ...args) {
     if (!typeof this[funcName] === 'function') return;

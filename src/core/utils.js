@@ -24,4 +24,18 @@ export function objectify (arr) {
   return obj;
 }
 
+export function messageFactory (message, cssClass = '', sanitize = false) {
+  return {
+    cssClass,
+    message,
+    sanitize
+  }
+}
+
+export function stripChar (msg) {
+  return msg.replace(/[^a-zA-Zа-яА-Я0-9_:=!,'" \?\.\/\-\)\(\*\$]*/g, '');
+}
+
+export function cutUid (uid) { return uid.substr(-6); }
+
 export { hash, seed };
