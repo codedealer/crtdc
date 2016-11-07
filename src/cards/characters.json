@@ -38,5 +38,17 @@
   {
     "name": "Брат Захария",
     "imgClass": "zachary"
+  },
+  {
+    "name": "Создатель",
+    "imgClass": "creator"
+  },
+  {
+    "name": "Эмма",
+    "imgClass": "emma"
+  },
+  {
+    "name": "Скарлетт",
+    "imgClass": "scarlett"
   }
 ]

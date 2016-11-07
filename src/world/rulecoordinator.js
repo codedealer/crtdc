@@ -10,6 +10,13 @@ import turncoordinator from '../turn/turncoordinator'
 
 const CARDS_MIN_DEAL = 2;
 
+const SPECIAL_CHARACTERS = {
+  '-KVkOcIZlsB5_aCp4u6V': 9,
+  '-KObgzBKVzAJr3xvhSGv': 10,
+  '-KSwbALEpaWK9WZJka3D': 12,
+  '-KOcCE1tjuhdd5aORH5E': 11
+}
+
 let handLimits = {
   3: 8,
   4: 6,
@@ -49,7 +56,11 @@ export default {
       newPlayer.occupation = occupationDeck.shift();
       newPlayer.character = characterDeck.shift();
 
-      if (player.uid === '-KVkOcIZlsB5_aCp4u6V') newPlayer.character = characters[9];
+      //special characters
+      if (SPECIAL_CHARACTERS.hasOwnProperty(player.uid) &&
+          characters.length > SPECIAL_CHARACTERS[player.uid]) {
+        newPlayer.character = characters[SPECIAL_CHARACTERS[player.uid]];
+      }
 
       if (serverExtensions.hasOwnProperty(player.uid)) {
         newPlayer = Object.assign(newPlayer, player, extension, serverExtensions[player.uid]);

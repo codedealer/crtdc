@@ -42,3 +42,15 @@
   @extend %character-picture;
   background-image: url('../assets/zachary.jpg');
 }
+.creator{
+  @extend %character-picture;
+  background-image: url('../assets/creator.jpg');
+}
+.emma{
+  @extend %character-picture;
+  background-image: url('../assets/emma.jpg');
+}
+.scarlett{
+  @extend %character-picture;
+  background-image: url('../assets/scarlett.jpg');
+}
