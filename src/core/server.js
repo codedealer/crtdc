@@ -41,6 +41,12 @@ export default class Server {
 
         if (data === null) throw 'Game is not found';
 
+        //if this is first player
+        //clear chat log from prev games
+        if (!data.players || data.players.length === 0) {
+          this.em.emit('chat.flush');
+        }
+
         let cond = !data.started &&
                   (!data.players || !data.players.hasOwnProperty(user.uid));
 
