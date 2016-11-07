@@ -8,7 +8,7 @@
   </div>
   <div class="chat-input-container" :v-show="showChat">
     <input type="text" class="chat-input" v-model="userMessage" maxlength="140" @keyup.enter.stop="sendUserMessage" tabindex="1">
-    <button class="chat-btn" @click.stop="sendUserMessage">Отправить</button>
+    <button class="chat-btn" :class="{'disabled': chatBan}" @click.stop="sendUserMessage">Отправить</button>
   </div>
  </section>
 </template>
@@ -28,6 +28,13 @@ export default {
     logger.s(`Добро пожаловать в игру. Версия ${config.version}`);
 
     this.chat = new Chat(this.em, this.user);
+
+    this.em.on('self.player.chat.ban', () => {
+      logger.a('Не так быстро, ковбой');
+      this.chatBan = true;
+    });
+
+    this.em.on('self.player.chat.ban.lifted', () => { this.chatBan = false; });
 
     this.em.on('sv.player_join', uid => {
       this.showChat = true;
@@ -226,6 +233,7 @@ export default {
   data () {
     return {
       showChat: false,
+      chatBan: false,
       chat: null,
       userMessage: '',
       messages: [],
@@ -274,6 +282,10 @@ export default {
   width: 80px;
   float: right;
   font-size: 11px;
+  &.disabled{
+    opacity: .3;
+    cursor: not-allowed;
+  }
 }
 .chat-message{
   margin: 0 5px;

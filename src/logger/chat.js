@@ -1,6 +1,7 @@
 import config from '../server-config/chat-config.json'
 import firebase from 'firebase'
 import {stripChar, cutUid} from '../core/utils'
+import watchDog from './watch-dog'
 
 function setAuthorName (svMessageObject, players, self) {
   if (!self) throw new Error('Chat has no user defined');
@@ -27,6 +28,7 @@ export default class {
     this.self = self;
     this.db = firebase.database(app);
     this.players = [];
+    this.watchDog = watchDog;
 
     this.em.on('gm.user.join', gameName => this.connect(gameName));
   }
@@ -44,6 +46,8 @@ export default class {
     this.em.emit('log', 'u', `${svMessageObject.author}: ${svMessageObject.msg}`);
   }
   send (msg) {
+    if (!this.watchDog.guard()) return;
+
     let sanitizedMsg = stripChar(msg);
 
     let svMessageObject = this.svMessageObjectFactory(sanitizedMsg);
