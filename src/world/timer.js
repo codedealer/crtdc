@@ -6,7 +6,7 @@ export default class Timer {
       this.intervalFunc = false;
     }
 
-    if (typeof intervalFunc === 'function') {
+    if (typeof doneFunc === 'function') {
       this.doneFunc = context ? doneFunc.bind(context) : doneFunc;
     } else {
       this.doneFunc = false;
