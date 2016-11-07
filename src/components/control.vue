@@ -111,7 +111,7 @@ export default {
     flex: 0 1 auto;
     align-self: auto;
   }
-  background: linear-gradient(135deg, rgba(104,103,104,0) 0%,rgba(2,2,2,1) 100%), url(../assets/panel.jpg);
+  background: linear-gradient(135deg, rgba(104,103,104,0) 0%,rgba(2,2,2,1) 100%), url(../assets/black-wood.jpg);
   box-shadow: 0 0 10px rgba(0,0,0,0.8);
 }
 
@@ -122,7 +122,7 @@ export default {
 
 .c-button-container{
   height: $bottom-shelf-height;
-  background: linear-gradient(135deg, rgba(104,103,104,0) 0%,rgba(2,2,2,1) 100%), url(../assets/panel.jpg);
+  background: radial-gradient(ellipse at center, rgba(125,185,232,0) 0%,rgba(0,0,0,0.75) 100%), url(../assets/black-wood.jpg);
   box-shadow: 0 0 10px rgba(0,0,0,0.8);
 }
 
