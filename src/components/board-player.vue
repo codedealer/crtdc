@@ -4,7 +4,7 @@
       <div class="board-player-picture-cards">{{ player.hand.length }}</div>
       <div class="board-player-picture-tokens" v-show="player.tokens">{{ player.tokens }}</div>
     </div>
-    <div class="board-player-info {{ showAllegiance ? player.allegiance.cssClass : '' }}">
+    <div class="board-player-info" :class="allegianceClass">
       <div class="board-player-name">{{ status.self ? 'Вы' : player.character.name }}</div>
       <div class="board-player-delimeter"></div>
       <div class="board-player-occupation">{{ showOccupation ? player.occupation.name : '???' }}</div>
@@ -28,12 +28,21 @@ export default {
       this.status['duel-ready'] = false;
     });
 
+    this.em.on('fun.team', player => {
+      if (player.uid === this.player.uid && !this.team) {
+        this.em.emit('log', 'a', `${player.character.name} перешел в братство без знамен!`);
+
+        this.team = true;
+      }
+    });
+
     this.em.on('gm.win', () => { this.gameFinished = true; });
   },
   data () {
     return {
       em: EventEmitter.getInstance(),
       gameFinished: false,
+      team: false,
       status: {
         active: false,
         selectable: false,
@@ -56,6 +65,21 @@ export default {
       if (this.player.uid === this.user.uid) return true;
 
       return this.player.occupation.disclosed;
+    },
+    allegianceClass () {
+      let primaryClass = this.player.allegiance.cssClass;
+      let teamClass = 'bannerless';
+
+      let o = {
+        [primaryClass]: false,
+        [teamClass]: false
+      }
+
+      if (this.showAllegiance) o[primaryClass] = true;
+      if (this.team) o[teamClass] = true;
+      if (this.team && this.player.uid === this.user.uid) o[primaryClass] = false;
+
+      return o;
     }
   },
   methods: {

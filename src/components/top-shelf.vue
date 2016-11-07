@@ -22,6 +22,13 @@ export default {
       if (info.uid === this.player.uid) this.myTurn = true;
       else this.myTurn = false;
     });
+
+    this.em.on('fun.team', player => {
+      if (player.uid !== this.player.uid) return;
+
+      document.getElementsByClassName('c-turn-buttons')[0].className = 'c-turn-buttons';
+    });
+
     this.em.on('gm.restrict.turns', () => { this.globalTurn = false });
     this.em.on('gm.allow.turns', () => { this.globalTurn = true });
   },
