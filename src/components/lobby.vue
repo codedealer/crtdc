@@ -6,13 +6,15 @@
     </header>
     <ul class="i-player-lobby">
       <template v-for="player in options.players">
-        <li class="{{player.status}}">{{player.uid}}</li>
+        <li class="{{player.status}}">{{* cut(player.uid) }}</li>
       </template>
     </ul>
   </div>
 </template>
 
 <script>
+import {cutUid} from '../core/utils'
+
 export default {
   props: ['options'],
   data () {
@@ -20,7 +22,8 @@ export default {
       headerTexts: [
         'Ожидаем заполнения кареты',
         'Игра начнется, когда все будут готовы'
-      ]
+      ],
+      cut: cutUid
     }
   }
 }
