@@ -26,6 +26,7 @@
 <script>
 import rulecoordinator from '../world/rulecoordinator'
 import {brotherhood, order} from '../cards/allegiance'
+import EventEmitter from '../core/eventemitter'
 
 import Vue from 'vue';
 
@@ -46,7 +47,8 @@ export default {
         active: false,
         activated: false
       },
-      occupationBusy: false
+      occupationBusy: false,
+      em: EventEmitter.getInstance()
     }
   },
   computed: {
