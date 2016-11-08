@@ -54,6 +54,9 @@ export default class World {
 
       this.seed = seed();
 
+      //host flushes chat after restart
+      if (this.recurring) this.em.emit('chat.flush');
+
       let allowedPlayers = this.players.filter(x => x.status === Status.READY).slice(0, this.settings.PLAYERS_MAX);
 
       let pool = {};
@@ -156,6 +159,9 @@ export default class World {
     }
 
     if (this.updated === date) return;
+
+    //clear chat history
+    if (this.recurring) this.em.emit('log.clear');
 
     //at this point the game has just started or resumed after pause
     this.updated = date;

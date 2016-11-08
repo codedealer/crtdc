@@ -36,6 +36,10 @@ export default {
 
     this.em.on('self.player.chat.ban.lifted', () => { this.chatBan = false; });
 
+    this.em.on('log.clear', () => {
+      this.messages.splice(0);
+    });
+
     this.em.on('sv.player_join', uid => {
       this.showChat = true;
       logger.s(`${cutUid(uid)} присоединился к игре`);
