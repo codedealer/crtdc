@@ -8,11 +8,37 @@
 import lobby from './lobby'
 import assistant from './assistant'
 import PlayerStatus from '../player/status'
+import EventEmitter from '../core/eventemitter'
 
 export default {
   props: ['players', 'canStart', 'user', 'started'],
+  ready () {
+    this.em.on('turn.new', info => {
+      this.$broadcast('as-turn-new', info);
+    });
+    this.em.on('turn.action', () => {
+      this.$broadcast('as-turn-action');
+    });
+    this.em.on('gm.occupation.disclosed', player => {
+      this.$broadcast('as-occupation-disclosed', player);
+    });
+    this.em.on('gm.win', () => {
+      this.$broadcast('as-win');
+    });
+    this.em.on('gm.start', () => {
+      this.$broadcast('as-start');
+    });
+    this.em.on('gm.restrict.turns', () => {
+      this.$broadcast('as-restrict');
+    });
+    this.em.on('gm.allow.turns', () => {
+      this.$broadcast('as-allow');
+    });
+  },
   data () {
-    return { }
+    return {
+      em: EventEmitter.getInstance()
+    }
   },
   computed: {
     currentWidget () {

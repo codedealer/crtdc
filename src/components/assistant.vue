@@ -26,52 +26,9 @@
 <script>
 import rulecoordinator from '../world/rulecoordinator'
 import {brotherhood, order} from '../cards/allegiance'
-import EventEmitter from '../core/eventemitter'
 
 export default {
   props: ['options'],
-  ready () {
-    this.em.on('turn.new', info => {
-      let uid = info.uid;
-
-      this.options.players.forEach(player => {
-        let o = player.occupation;
-        if (o.disclosed) return;
-
-        if (o.onTurn ||
-            (o.onSelfTurn && player.uid === uid)) {
-          o.availability = true;
-        }
-      });
-    });
-
-    this.em.on('turn.action', () => {
-      this.options.players.forEach(player => {
-        let o = player.occupation;
-        if (o.disclosed) return;
-
-        if (o.onSelfTurn) {
-          o.availability = false;
-        }
-      });
-    });
-
-    this.em.on('gm.occupation.disclosed', player => {
-      if (player.uid === this.options.user.uid) {
-        this.occupationBusy = false;
-      }
-    });
-
-    this.em.on('gm.win', () => { this.gameFinished = true; });
-    this.em.on('gm.start', () => {
-      let ac = this.allegianceClass;
-      console.log(ac);
-      this.target = this.options.players[this.options.selfIndex];
-    });
-
-    this.em.on('gm.restrict.turns', () => { this.globalTurn = false });
-    this.em.on('gm.allow.turns', () => { this.globalTurn = true });
-  },
   data () {
     return {
       target: this.options.players[this.options.selfIndex],
@@ -87,8 +44,7 @@ export default {
         active: false,
         activated: false
       },
-      occupationBusy: false,
-      em: EventEmitter.getInstance()
+      occupationBusy: false
     }
   },
   computed: {
@@ -143,6 +99,46 @@ export default {
   events: {
     'as.change-target' (player) {
       this.target = player || this.options.players[this.options.selfIndex];
+    },
+    'as-allow' () {
+      this.globalTurn = true;
+    },
+    'as-restrict' () {
+      this.globalTurn = false;
+    },
+    'as-start' () {
+      this.target = this.options.players[this.options.selfIndex];
+    },
+    'as-win' () {
+      this.gameFinished = true;
+    },
+    'as-occupation-disclosed' (player) {
+      if (player.uid === this.options.user.uid) {
+        this.occupationBusy = false;
+      }
+    },
+    'as-turn-action' () {
+      this.options.players.forEach(player => {
+        let o = player.occupation;
+        if (o.disclosed) return;
+
+        if (o.onSelfTurn) {
+          o.availability = false;
+        }
+      });
+    },
+    'as-turn-new' (info) {
+      let uid = info.uid;
+
+      this.options.players.forEach(player => {
+        let o = player.occupation;
+        if (o.disclosed) return;
+
+        if (o.onTurn ||
+            (o.onSelfTurn && player.uid === uid)) {
+          o.availability = true;
+        }
+      });
     }
   },
   methods: {
