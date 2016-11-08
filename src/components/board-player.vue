@@ -18,15 +18,16 @@ import EventEmitter from '../core/eventemitter'
 export default {
   props: ['player', 'user'],
   ready () {
-    this.em.on(['turn.new', 'gm.start'], queue => {
+    this.em.on('turn.new', queue => {
+      this.reset();
+
       if (this.player.uid === queue.uid) this.status.active = true;
       else this.status.active = false;
+    });
 
-      this.status.selected = false;
-      this.status.selectable = false;
-      this.status['duel-active'] = false;
-      this.status['duel-ready'] = false;
-      this.status.self = this.player.uid === this.user.uid
+    this.em.on('gm.startdeck', () => {
+      this.team = false;
+      this.reset();
     });
 
     this.em.on('fun.team', player => {
@@ -97,6 +98,14 @@ export default {
       } else if (!this.status.selectable) {
         this.$dispatch('b.change-target', this.player);
       }
+    },
+    reset () {
+      this.status.active = false;
+      this.status.selected = false;
+      this.status.selectable = false;
+      this.status['duel-active'] = false;
+      this.status['duel-ready'] = false;
+      this.status.self = this.player.uid === this.user.uid
     }
   },
   events: {
