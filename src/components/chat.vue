@@ -45,7 +45,7 @@ export default {
       logger.s(`${cutUid(uid)} вышел`);
     });
 
-    this.em.once('gm.start', players => {
+    this.em.on('gm.start', players => {
       this.chat.setPlayers(players);
 
       logger.s(`Игра на ${players.length}`);
