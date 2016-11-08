@@ -13,6 +13,7 @@ function preTurn () {
   this.pool.expectAny(this.turns.vote, 'turn', 'all').then(this.onVote.bind(this));
 
   this.em.emit('board.card-selector.init', this.starterPack, { dismissable: true, selectable: false }, () => { this.turns.makeVote('turn') });
+  this.em.emit('gm.startdeck');
   this.em.emit('log', 's', 'Стартовая колода на столе');
 }
 

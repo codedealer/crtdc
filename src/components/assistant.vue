@@ -27,6 +27,8 @@
 import rulecoordinator from '../world/rulecoordinator'
 import {brotherhood, order} from '../cards/allegiance'
 
+import Vue from 'vue';
+
 export default {
   props: ['options'],
   data () {
@@ -107,7 +109,12 @@ export default {
       this.globalTurn = false;
     },
     'as-start' () {
-      this.target = this.options.players[this.options.selfIndex];
+      Vue.nextTick(() => {
+        this.target = null;
+      });
+      Vue.nextTick(() => {
+        this.target = this.options.players[this.options.selfIndex];
+      });
     },
     'as-win' () {
       this.gameFinished = true;

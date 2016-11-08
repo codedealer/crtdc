@@ -25,7 +25,7 @@ export default {
     this.em.on('gm.win', () => {
       this.$broadcast('as-win');
     });
-    this.em.on('gm.start', () => {
+    this.em.on('gm.startdeck', () => {
       this.$broadcast('as-start');
     });
     this.em.on('gm.restrict.turns', () => {
