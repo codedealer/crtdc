@@ -111,7 +111,7 @@ export default class World {
   }
   onPlayersReadyChange (uid, status = false) {
     if (this.status === GameStatus.INGAME || status === Status.INGAME) return;
-    console.log(this.status, this.players);
+
     if (this.status === GameStatus.FINISHED) {
       let playersToRestart = 0;
       let firstToPropose;
