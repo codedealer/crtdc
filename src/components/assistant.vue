@@ -77,7 +77,7 @@ export default {
       let o = Object.assign({}, this.occupationStatusObject);
 
       o.available = this.target.uid === this.options.user.uid
-      ? (this.target.occupation.availability && this.globalTurn)
+      ? (this.target.occupation.availability && this.globalTurn && !this.gameFinished)
       : false;
 
       o.active = this.target.occupation.disclosed && this.target.occupation.continuous;
@@ -150,7 +150,7 @@ export default {
   },
   methods: {
     activateOccupation () {
-      if (!this.globalTurn) return;
+      if (!this.globalTurn || this.gameFinished) return;
       if (this.target.uid === this.options.user.uid &&
         this.occupationStatus.available &&
         this.occupationBusy === false) {
