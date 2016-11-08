@@ -2,6 +2,7 @@ export default {
   buffer: [],
   length: 0,
   pointer: 0,
+  turns: 0,
   populate (players) {
     this.buffer = [];
     players.forEach(player => {
@@ -15,6 +16,7 @@ export default {
     let index = this.pointer;
 
     this.pointer += 1;
+    this.turns += 1;
     if (this.pointer >= this.length) this.pointer = 0;
     return { uid, index }
   },
@@ -32,5 +34,6 @@ export default {
   },
   reset () {
     this.pointer = 0;
+    this.turns = 0;
   }
 }

@@ -7,15 +7,23 @@
 <script>
 import lobby from './lobby'
 import assistant from './assistant'
+import PlayerStatus from '../player/status'
 
 export default {
   props: ['players', 'canStart', 'user', 'started'],
   data () {
-    return {
-    }
+    return { }
   },
   computed: {
-    currentWidget () { return this.started ? 'assistant' : 'lobby' },
+    currentWidget () {
+      let widget = 'lobby';
+
+      if (this.started &&
+          this.players[this.selfIndex].status === PlayerStatus.INGAME) {
+        widget = 'assistant';
+      }
+      return widget;
+    },
     selfIndex () { return this.players.findIndex(player => player.uid === this.user.uid) },
     options () {
       if (this.currentWidget === 'lobby') {

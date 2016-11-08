@@ -104,10 +104,17 @@ export default class Server {
     let dataToUpdate = {};
     let timestamp = new Date().getTime();
 
+    let playerStatues = {};
+
+    gameObject.players.forEach(x => { playerStatues[x.uid] = Status.INGAME })
+
     dataToUpdate = {
-      [`games/${gameName}/started`]: gameObject.started,
-      [`games/${gameName}/status`]: gameObject.status,
-      [`games/${gameName}/updated`]: timestamp
+      [`games/${gameName}`]: {
+        players: playerStatues,
+        started: gameObject.started,
+        status: gameObject.status,
+        updated: timestamp
+      }
     }
 
     let hands = {};

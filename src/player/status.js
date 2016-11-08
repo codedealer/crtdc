@@ -1,4 +1,5 @@
 export default {
   IDLE: 'online',
-  READY: 'ready'
+  READY: 'ready',
+  INGAME: 'ingame'
 }

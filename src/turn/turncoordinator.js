@@ -8,6 +8,14 @@ import co from 'co'
 let contractorCaller = {};
 let contractorCallee = {};
 
+function preTurn () {
+  this.em.on('pool.change', this.pool.onChange.bind(this.pool));
+  this.pool.expectAny(this.turns.vote, 'turn', 'all').then(this.onVote.bind(this));
+
+  this.em.emit('board.card-selector.init', this.starterPack, { dismissable: true, selectable: false }, () => { this.turns.makeVote('turn') });
+  this.em.emit('log', 's', 'Стартовая колода на столе');
+}
+
 export default {
   queue: {},
   pool: null,
@@ -20,6 +28,7 @@ export default {
     this.self = players.find(x => x.uid === selfUid);
     this.players = players;
     this.pool = new Pool(pool, this.em, this.self);
+    this.starterPack = starterPack;
 
     for (let [index, turn] of Object.entries(Turns)) {
       this.turns[index] = turn.bind(this);
@@ -28,17 +37,23 @@ export default {
     this.queue.populate(players);
 
     if (turn === GameStatus.PREGAME) {
-      this.em.once('board.card-selector.ready', () => {
-        this.em.on('pool.change', this.pool.onChange.bind(this.pool));
-        this.pool.expectAny(this.turns.vote, 'turn', 'all').then(this.onVote.bind(this));
-
-        this.em.emit('board.card-selector.init', starterPack, { dismissable: true, selectable: false }, () => { this.turns.makeVote('turn') });
-        this.em.emit('log', 's', 'Стартовая колода на столе');
-      });
+      this.em.once('board.card-selector.ready', preTurn.bind(this));
 
       this.dealStarterPack(players, starterPack);
       this.queue.reset();
     }
+  },
+  reset (turn, pool, players, selfUid, starterPack) {
+    this.players = players;
+    this.self = players.find(x => x.uid === selfUid);
+    this.pool.pool = pool;
+    this.queue.populate(players);
+    this.starterPack = starterPack;
+
+    preTurn.call(this);
+
+    this.dealStarterPack(players, starterPack);
+    this.queue.reset();
   },
   dealStarterPack (players, deck) {
     deck.forEach(card => {
@@ -77,7 +92,8 @@ export default {
       ;
   },
   finish () {
-    this.em.emit('log', 's', '-----THAT\'S ALL FOLKS-----');
+    this.queue.reset();
+    this.em.emit('gm.restart', this.self);
   },
   onVote (funcName) {
     this.em.removeAllListeners('pool.change');

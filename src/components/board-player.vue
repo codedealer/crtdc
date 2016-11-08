@@ -18,7 +18,7 @@ import EventEmitter from '../core/eventemitter'
 export default {
   props: ['player', 'user'],
   ready () {
-    this.em.on('turn.new', queue => {
+    this.em.on(['turn.new', 'gm.start'], queue => {
       if (this.player.uid === queue.uid) this.status.active = true;
       else this.status.active = false;
 
@@ -26,6 +26,7 @@ export default {
       this.status.selectable = false;
       this.status['duel-active'] = false;
       this.status['duel-ready'] = false;
+      this.status.self = this.player.uid === this.user.uid
     });
 
     this.em.on('fun.team', player => {
@@ -37,6 +38,11 @@ export default {
     });
 
     this.em.on('gm.win', () => { this.gameFinished = true; });
+    this.em.on('gm.restart', () => {
+      this.gameFinished = false;
+      this.player.occupation.disclosed = false;
+      this.user.known = [];
+    });
   },
   data () {
     return {

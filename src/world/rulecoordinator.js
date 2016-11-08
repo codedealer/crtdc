@@ -42,24 +42,30 @@ export default {
 
     let allegianceDeck = this.dealAllegianceDeck(seed, players.length);
     let occupationDeck = this.dealOccupationDeck(seed, players.length);
-    let characterDeck = this.dealCharacterDeck(seed, players.length);
+    let characterDeck = this.dealCharacterDeck(seed, players, players.length);
 
     players = players.map(player => {
       let newPlayer = {};
       let extension = {
         hand: [],
         tokens: 0,
-        known: []
+        known: [],
+        allegiance: allegianceDeck.shift(),
+        occupation: occupationDeck.shift()
       }
 
-      newPlayer.allegiance = allegianceDeck.shift();
-      newPlayer.occupation = occupationDeck.shift();
-      newPlayer.character = characterDeck.shift();
+      if (player.character) {
+        //keep character if possible
+        extension.character = player.character;
+      } else {
+        //if not assign available character
+        extension.character = characterDeck.shift();
 
-      //special characters
-      if (SPECIAL_CHARACTERS.hasOwnProperty(player.uid) &&
-          characters.length > SPECIAL_CHARACTERS[player.uid]) {
-        newPlayer.character = characters[SPECIAL_CHARACTERS[player.uid]];
+        //special characters
+        if (SPECIAL_CHARACTERS.hasOwnProperty(player.uid) &&
+            characters.length > SPECIAL_CHARACTERS[player.uid]) {
+          extension.character = characters[SPECIAL_CHARACTERS[player.uid]];
+        }
       }
 
       if (serverExtensions.hasOwnProperty(player.uid)) {
@@ -85,7 +91,7 @@ export default {
     let serverExtensions = {};
 
     for (let uid of Object.keys(gameObject.profiles)) {
-      playersInGame.push(new Player(uid, Status.READY));
+      playersInGame.push(new Player(uid, Status.INGAME));
 
       let token = Object.keys(gameObject.occupations[uid]).shift();
       let o = Object.assign({}, occupations[token]);
@@ -229,19 +235,30 @@ export default {
 
     return occupationsArr.slice(0, playersNum);
   },
-  dealCharacterDeck (seed, playersNum) {
+  dealCharacterDeck (seed, players, playersNum) {
     seed += 'ch';
 
     let charactersArr = characters.slice(0, 9);
+
+    charactersArr = charactersArr.filter(character => {
+      return !players.some(p => {
+        if (!p.character) return false;
+        return character.name === p.character.name;
+      });
+    });
 
     shuffle(charactersArr, seed);
 
     return charactersArr;
   },
-  load (gameObject, players, selfUid) {
+  load (gameObject, players, selfUid, isRestart = false) {
     let initialDeck = this.prepDeck(gameObject.seed, players);
 
     this.deck.fromSnapshot(initialDeck.rest, gameObject.deck);
-    turncoordinator.init(gameObject.turn, gameObject.pool, players, selfUid, initialDeck.starterPack);
+    if (isRestart) {
+      turncoordinator.reset(gameObject.turn, gameObject.pool, players, selfUid, initialDeck.starterPack);
+    } else {
+      turncoordinator.init(gameObject.turn, gameObject.pool, players, selfUid, initialDeck.starterPack);
+    }
   }
 }

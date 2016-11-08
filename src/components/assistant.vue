@@ -63,6 +63,11 @@ export default {
     });
 
     this.em.on('gm.win', () => { this.gameFinished = true; });
+    this.em.on('gm.start', () => {
+      let ac = this.allegianceClass;
+      console.log(ac);
+      this.target = this.options.players[this.options.selfIndex];
+    });
 
     this.em.on('gm.restrict.turns', () => { this.globalTurn = false });
     this.em.on('gm.allow.turns', () => { this.globalTurn = true });
