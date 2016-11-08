@@ -1,5 +1,5 @@
 <template>
-  <div class="c-turn-buttons {{* player.allegiance.cssClass }}">
+  <div class="c-turn-buttons" :class="allegianceClass">
     <button class="c-turn-btn" :class="{'inactive': !canSpy, 'active': action == 'Spy'}" title="шпионаж" @click.stop="chooseAction('Spy')"><i class="icon-search"></i></button>
     <button class="c-turn-btn" :class="{'inactive': !canTrade, 'active': action == 'Trade'}" title="обмен" @click.stop="chooseAction('Trade')"><i class="icon-arrows-ccw"></i></button>
     <button class="c-turn-btn" :class="{'inactive': !canDuel, 'active': action == 'Duel'}" title="дуэль" @click.stop="chooseAction('Duel')"><i class="icon-shield"></i></button>
@@ -21,10 +21,12 @@ export default {
       else this.myTurn = false;
     });
 
+    this.em.on('gm.restart', () => { this.action = ''; this.myTurn = false; });
+
     this.em.on('fun.team', player => {
       if (player.uid !== this.player.uid) return;
 
-      document.getElementsByClassName('c-turn-buttons')[0].className = 'c-turn-buttons';
+      this.showAllegiance = false;
     });
 
     this.em.on('gm.restrict.turns', () => { this.globalTurn = false });
@@ -35,10 +37,14 @@ export default {
       myTurn: false,
       globalTurn: true,
       action: '',
+      showAllegiance: true,
       em: EventEmitter.getInstance()
     }
   },
   computed: {
+    allegianceClass () {
+      return { [this.player.allegiance.cssClass]: this.showAllegiance }
+    },
     canSpy () { return this.myTurn && this.globalTurn },
     canTrade () { return this.myTurn && this.player.hand.length && this.globalTurn },
     canDuel () { return this.myTurn && this.globalTurn },

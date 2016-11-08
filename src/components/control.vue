@@ -6,7 +6,7 @@
     <div class="c-button-container">
       <button @click="toggleReady" class="toggler" :class="{ 'pressed': ready }" v-show="!started && status !== notConnected">{{readyText}}</button>
       <modal v-show="showModal" :options="modalOptions"></modal>
-      <top-shelf v-if="started" v-show="!showModal && status !== finished" :player="self"></top-shelf>
+      <top-shelf v-if="started" v-show="!showModal && status === ingame" :player="self"></top-shelf>
     </div>
   </section>
 </template>
@@ -37,7 +37,7 @@ export default {
       em: EventEmitter.getInstance(),
       showModal: false,
       notConnected: gameStatus.PREJOIN,
-      finished: gameStatus.FINISHED,
+      ingame: gameStatus.INGAME,
       modalOptions: {}
     }
   },
