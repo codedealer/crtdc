@@ -2,12 +2,12 @@ import Timer from '../world/timer'
 import EventEmitter from '../core/eventemitter'
 
 const POLICY = {
-  observeInterval: 1500,
+  observeInterval: 3000,
   violationLevelCooldown: 20000,
   allowedNum: 3,
   banTime: {
     0: 0,
-    1: 1500,
+    1: 3000,
     2: 10000,
     3: 60000
   }
