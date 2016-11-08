@@ -632,6 +632,7 @@ export function* win () {
       }
       if (playersToWin[i].allegiance.org === caller.allegiance.org) {
         msg = `${playersToWin[i].character.name} из организации ${caller.allegiance.title}`;
+
         trophies = playersToWin[i].hand.reduce((prev, card) => {
           return card.token === caller.allegiance.token ? prev + 1 : prev;
         }, 0);
@@ -640,8 +641,11 @@ export function* win () {
           if (caller.allegiance.org === 'order') msg += ` обладает ${trophies} ` + (trophies === 1 ? 'ключом' : 'ключами');
           else msg += ` обладает ${trophies} ` + (trophies === 1 ? 'кубком' : 'кубками');
         }
+
         if (playersToWin[i].hand.find(x => {
-          x.token === playersToWin[i].allegiance.token === 'key' ? 'bagkey' : 'bagcup'
+          let bagToken = playersToWin[i].allegiance.token === 'key' ? 'bagkey' : 'bagcup';
+
+          return x.token === bagToken;
         })) {
           msg += trophies > 0 ? ' а также саквояжем' : 'обладает саквояжем';
         }
