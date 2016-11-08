@@ -91,7 +91,17 @@ export default {
     let serverExtensions = {};
 
     for (let uid of Object.keys(gameObject.profiles)) {
-      playersInGame.push(new Player(uid, Status.INGAME));
+      let character;
+
+      if (gameObject.profiles[uid].character) {
+        character = characters.find(x => x.imgClass === gameObject.profiles[uid].character);
+      }
+
+      if (character) {
+        playersInGame.push(new Player(uid, Status.INGAME, character));
+      } else {
+        playersInGame.push(new Player(uid, Status.INGAME));
+      }
 
       let token = Object.keys(gameObject.occupations[uid]).shift();
       let o = Object.assign({}, occupations[token]);
