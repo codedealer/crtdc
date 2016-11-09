@@ -63,9 +63,6 @@ export default {
 
       this.$broadcast('b.selectable.init', options.exclude);
     });
-
-    //temporary disable showing of duel readiness
-    //this.em.on('turn.action.duel', poolObject => this.$broadcast('b.duel.init', poolObject));
   },
   data () {
     return {

@@ -187,7 +187,7 @@ export let sextant = {
       let direction = playerToGive[0].uid === nextPlayer ? 'next' : 'prev';
       dirPoolObject = yield this.turns.updatePool('direction', playerToGive[0].uid, { direction });
     } else {
-      dirPoolObject = yield this.pool.expect();
+      dirPoolObject = yield this.pool.expect(trader.uid);
     }
 
     let dir = dirPoolObject.actionObject.args.direction;

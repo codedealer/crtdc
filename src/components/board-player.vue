@@ -44,6 +44,21 @@ export default {
       this.player.occupation.disclosed = false;
       this.user.known = [];
     });
+
+    this.em.on('vote', (requiredUid, votedUid) => {
+      if ((requiredUid === 'all' || this.uidIn(requiredUid)) &&
+        !this.status.ready) {
+        if (this.uidIn(votedUid)) {
+          this.status.ready = true;
+          this.status.pending = false;
+        } else this.status.pending = true;
+      }
+    });
+
+    this.em.on('vote.close', () => {
+      this.status.ready = false;
+      this.status.pending = false;
+    });
   },
   data () {
     return {
@@ -55,8 +70,8 @@ export default {
         selectable: false,
         selected: false,
         self: this.player.uid === this.user.uid,
-        'duel-active': false,
-        'duel-ready': false
+        pending: false,
+        ready: false
       }
     }
   },
@@ -103,10 +118,9 @@ export default {
       this.status.active = false;
       this.status.selected = false;
       this.status.selectable = false;
-      this.status['duel-active'] = false;
-      this.status['duel-ready'] = false;
       this.status.self = this.player.uid === this.user.uid
-    }
+    },
+    uidIn (arr) { return arr.some(x => x === this.player.uid) }
   },
   events: {
     'b.selectable.init' (exclude) {
@@ -116,7 +130,7 @@ export default {
     'b.selectable.close' () { this.status.selectable = false; },
     'b.duel.init' (poolObject) {
       if (this.player.uid !== poolObject.uid && this.player.uid !== poolObject.actionObject.callee) {
-        this.status['duel-active'] = true;
+        this.status.pending = true;
       }
     }
   }
@@ -168,6 +182,16 @@ $board-shadow: inset -1px 1px 1px rgba(255,255,255,0.7), inset 1px -1px 1px rgba
       /*color: lighten($active, 10);*/
     }
   }
+  &.pending{
+    .board-player-picture{
+      animation: slow-flash-duel .5s infinite alternate;
+    }
+    .board-player-info{
+      /*turn on only on small screen cuz it looks like shite
+      animation: slow-flash-board .5s infinite alternate;*/
+      box-shadow: $board-shadow, 0 0 7px fade-out($order-primary, 0.1);
+    }
+  }
   &.selectable{
     .board-player-picture{
       border-color: $select;
@@ -189,16 +213,6 @@ $board-shadow: inset -1px 1px 1px rgba(255,255,255,0.7), inset 1px -1px 1px rgba
     }
     .board-player-info{
       box-shadow: $board-shadow, 0 0 7px fade-out($selected, 0.1);
-    }
-  }
-  &.duel-active{
-    .board-player-picture{
-      animation: slow-flash-duel .5s infinite alternate;
-    }
-    .board-player-info{
-      /*turn on only on small screen cuz it looks like shite
-      animation: slow-flash-board .5s infinite alternate;*/
-      box-shadow: $board-shadow, 0 0 7px fade-out($order-primary, 0.1);
     }
   }
   &.duel-ready{

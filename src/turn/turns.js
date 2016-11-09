@@ -6,9 +6,15 @@ import Settings from '../world/settings'
 
 export function vote (newPoolObject, subject, criteria, cArgs = []) {
   let consensusCriteria = {
-    all (voted, poolSize) { return voted.length === poolSize },
+    all (voted, poolSize) {
+      this.em.emit('vote', 'all', voted);
+      return voted.length === poolSize;
+    },
     some (voted, poolSize, cArgs) {
       let voices = 0;
+
+      this.em.emit('vote', cArgs, voted);
+
       cArgs.forEach(voterUid => {
         if (voted.find(x => x === voterUid)) voices += 1;
       });
@@ -17,6 +23,8 @@ export function vote (newPoolObject, subject, criteria, cArgs = []) {
     },
     one (voted, poolSize, cArgs) {
       let target = Array.isArray(cArgs) ? cArgs[0] : cArgs;
+
+      this.em.emit('vote', [target], voted);
       return voted.find(x => x === target) !== undefined;
     }
   }
@@ -33,7 +41,7 @@ export function vote (newPoolObject, subject, criteria, cArgs = []) {
         poolObject.args.subject === subject) voted.push(i);
   }
 
-  return consensusCriteria[criteria](voted, poolSize, cArgs) ? subject : false;
+  return consensusCriteria[criteria].call(this, voted, poolSize, cArgs) ? subject : false;
 }
 
 export function makeVote (subject, callee = false) {
@@ -60,22 +68,21 @@ export function _giveCard (newPoolObject) {
 }
 
 export function give (newPoolObject) {
-  // if (newPoolObject.uid) {
-  //   this._giveCard(newPoolObject);
-  // }
-
   //check if everyone completed
-  let voted = 0;
+  let voted = [];
   let poolSize = 0;
+
   for (let [i, poolObject] of Object.entries(this.pool.pool)) {
     poolSize += 1;
     if (poolObject.action === 'give_sext') {
-      voted += 1;
+      voted.push(i);
       this.turns._giveCard({uid: i, actionObject: poolObject});
     }
   }
 
-  return voted === poolSize;
+  this.em.emit('vote', 'all', voted);
+
+  return voted.length === poolSize;
 }
 
 export function duelVote (newPoolObject, activePlayersUid) {
@@ -87,16 +94,21 @@ export function duelVote (newPoolObject, activePlayersUid) {
   }
 
   //check if active players completed
-  let voted = 0;
+  let voted = [];
+
   for (let [i, poolObject] of Object.entries(this.pool.pool)) {
-    if (poolObject.action === 'duel.player.ready') {
-      voted = activePlayersUid.find(uid => uid === i) ? voted + 1 : voted;
+    if (poolObject.action === 'duel.player.ready' &&
+        activePlayersUid.some(uid => uid === i)) {
+      voted.push(i);
+      this.em.emit('vote', activePlayersUid, voted);
     } else if (poolObject.action === 'duel.card' && !newPoolObject.uid) {
       this.em.emit('gm.duel.card', Object.assign({uid: i}, poolObject.args));
     }
   }
 
-  return voted === activePlayersUid.length;
+  if (!newPoolObject.uid) this.em.emit('vote', activePlayersUid, voted);
+
+  return voted.length === activePlayersUid.length;
 }
 
 export function cancelableVote (newPoolObject, ...args) {
@@ -180,7 +192,7 @@ export function* spy () {
 
     poolObject = yield this.turns.updatePool('spy', callee.uid, { index: peekedCardIndex });
   } else {
-    poolObject = yield this.pool.expect();
+    poolObject = yield this.pool.expect(this.queue.peekUid());
   }
 
   if (poolObject.actionObject.callee === poolObject.uid) {
@@ -219,7 +231,7 @@ export function* trade () {
 
     poolObject = yield this.turns.updatePool('trade', calleeTobe.uid, { card: cardToTrade.uid });
   } else {
-    poolObject = yield this.pool.expect();
+    poolObject = yield this.pool.expect(this.queue.peekUid());
   }
 
   this.em.emit('turn.action.trade', poolObject);
@@ -309,7 +321,7 @@ export function* duel () {
 
     poolObject = yield this.turns.updatePool('duel', callee.uid, false);
   } else {
-    poolObject = yield this.pool.expect();
+    poolObject = yield this.pool.expect(this.queue.peekUid());
   }
 
   this.em.emit('turn.action.duel', poolObject);
@@ -433,6 +445,8 @@ export function* duel () {
     this.self.occupation.availability = true;
   }
 
+  let duelResultResultPromise = this.pool.expectAny(this.turns.cancelableVote, 'duel.result', 'all');
+
   let winner = yield this.turns.resultDuel();
 
   //onDuelResult unhook
@@ -443,7 +457,7 @@ export function* duel () {
   if (winner !== null) {
     yield this.turns.makeVote('duel.result');
   }
-  let duelResultResult = yield this.pool.expectAny(this.turns.cancelableVote, 'duel.result', 'all');
+  let duelResultResult = yield duelResultResultPromise;
 
   if (duelResultResult === 'turn.end') return 'turn';
 
@@ -466,7 +480,7 @@ export function* duel () {
 
         ringPoolObject = yield this.turns.updatePool('ring', false, {choice: choiceResult});
       } else {
-        ringPoolObject = yield this.pool.expect();
+        ringPoolObject = yield this.pool.expect(ringBearer.uid);
       }
 
       useRing = ringPoolObject.actionObject.args.choice;
@@ -517,7 +531,7 @@ export function* duel () {
         prizePoolObject = yield this.turns.updatePool('learn', loser.uid);
       }
     } else {
-      prizePoolObject = yield this.pool.expect();
+      prizePoolObject = yield this.pool.expect(winner.uid);
     }
 
     this.em.emit('duel.prize.' + prizePoolObject.actionObject.action, prizePoolObject);
@@ -726,7 +740,7 @@ export function* resolveHandLimit () {
 
     limitPoolObject = yield this.turns.updatePool('give', playerToGive[0].uid, { card: cardToGive[0].uid });
   } else {
-    limitPoolObject = yield this.pool.expect();
+    limitPoolObject = yield this.pool.expect(violator.uid);
   }
 
   this.em.emit('turn.action.give', limitPoolObject);

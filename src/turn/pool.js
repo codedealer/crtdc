@@ -40,9 +40,13 @@ export default class {
     }
   }
   expect (from = false) {
+    if (from !== false) this.em.emit('vote', [from], []);
+
     return new Promise((resolve, reject) => {
       this.em.once('pool.read', ({uid, actionObject}) => {
         if (from === uid || from === false) {
+          if (from !== false) this.em.emit('vote', [from], [from]);
+          this.em.emit('vote.close');
           resolve({uid, actionObject});
         }
       });
@@ -60,12 +64,16 @@ export default class {
       //try to resolve immediatly
       let result = cb({}, ...args);
 
-      if (result !== false) return resolve(result);
+      if (result !== false) {
+        this.em.emit('vote.close');
+        return resolve(result);
+      }
 
       this.em.on('pool.read', poolObject => {
         let result = cb(poolObject, ...args);
         if (result !== false) {
           this.em.removeAllListeners('pool.read'); //cleanup
+          this.em.emit('vote.close');
           resolve(result);
         }
       });
