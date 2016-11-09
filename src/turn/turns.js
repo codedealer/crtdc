@@ -1,5 +1,7 @@
 import {ModalOK, ModalYesNo} from '../modal'
 import {objectify} from '../core/utils'
+import Timer from '../world/promise-timer'
+import Settings from '../world/settings'
 //this = turncoordinator
 
 export function vote (newPoolObject, subject, criteria, cArgs = []) {
@@ -561,7 +563,6 @@ export function* win () {
   //disclose allegiance to everyone
   if (this.self.known.find(x => x.uid === caller.uid) === undefined && !this.isCaller()) {
     this.self.known.push(caller);
-    this.em.emit('log', 'se', `${caller.character.name} из организации ${caller.allegiance.title}`);
   }
   //disclose occupation
   if (!caller.occupation.disclosed) {
@@ -607,58 +608,87 @@ export function* win () {
 
   let msg = '';
   let trophies = 0;
+  let winParty = sealWin ? 'seal' : caller.allegiance.org;
+
+  let winCriteriaPromise = this.turns.once('gm.win.criteria.got');
+  this.em.emit('gm.win.criteria.get', playersToWin, winParty);
+  let winCriteria = yield winCriteriaPromise;
+
   if (sealWin) {
-    let winnables = ['key', 'bagkey', 'cup', 'bagcup'];
+    let winnables = ['key', 'cup'];
+    if (winCriteria.canUseBag) winnables.push('bagkey', 'bagcup');
+
     trophies = caller.hand.reduce((prev, card) => {
       if (winnables.some(token => token === card.token)) return prev + 1;
 
       return prev;
     }, 0);
 
-    this.em.emit('log', 'g', `${caller.character.name} обладает ${trophies} ценными предметами (в том числе саквояжи)`);
+    let winMsg = `${caller.character.name} обладает ${trophies} ценными предметами`;
+
+    if (winCriteria.canUseBag) winMsg += ' в том числе саквояжи';
+
+    this.em.emit('log', 'g', winMsg);
   } else {
     let chosenPlayersNames = playersToWin.map(player => {
       return player.character.name;
     }).join(', ');
+    let handToShow = [];
 
     this.em.emit('log', 'g', `Были выбраны следующие игроки: ${chosenPlayersNames}`);
 
+    yield new Timer(Settings.DEFAULT_TURN_WAIT);
+
+    let itemsStr = caller.allegiance.org === 'order' ? 'ключа' : 'кубка';
+    this.em.emit('log', 'g', `Необходимо собрать ${winCriteria.requiredNum} ${itemsStr}`);
+
+    yield new Timer(Settings.DEFAULT_TURN_WAIT);
+
+    let winnables = [winCriteria.winItemName];
+    if (winCriteria.canUseBag) {
+      winnables.push(winCriteria.bagName);
+      this.em.emit('log', 'g', 'Саквояжи также учитываются');
+    } else this.em.emit('log', 'g', 'Саквояжи не учитываются');
+
+    yield new Timer(Settings.DEFAULT_TURN_WAIT);
+
     for (let i = 0; i < playersToWin.length; i++) {
-      if (playersToWin[i].uid !== caller.uid) {
-        if (this.self.known.find(x => x.uid === playersToWin[i].uid) === undefined &&
-            playersToWin[i].uid !== this.self.uid) {
-          this.self.known.push(playersToWin[i]);
-        }
-      }
       if (playersToWin[i].allegiance.org === caller.allegiance.org) {
-        msg = `${playersToWin[i].character.name} из организации ${caller.allegiance.title}`;
+        handToShow = [];
+        msg = `${playersToWin[i].character.name}`;
 
         trophies = playersToWin[i].hand.reduce((prev, card) => {
-          return card.token === caller.allegiance.token ? prev + 1 : prev;
+          if (winnables.some(token => token === card.token)) {
+            handToShow.push(card);
+            return prev + 1;
+          }
+
+          return prev;
         }, 0);
 
         if (trophies > 0) {
-          if (caller.allegiance.org === 'order') msg += ` обладает ${trophies} ` + (trophies === 1 ? 'ключом' : 'ключами');
-          else msg += ` обладает ${trophies} ` + (trophies === 1 ? 'кубком' : 'кубками');
-        }
-
-        if (playersToWin[i].hand.find(x => {
-          let bagToken = playersToWin[i].allegiance.token === 'key' ? 'bagkey' : 'bagcup';
-
-          return x.token === bagToken;
-        })) {
-          msg += trophies > 0 ? ' а также саквояжем' : 'обладает саквояжем';
+          msg += ` обладает ${trophies} `;
+          msg += (trophies === 1) ? 'предметом' : 'предметами';
+        } else {
+          msg += ' не имеет ценных предметов';
         }
 
         this.em.emit('log', 'g', msg);
+
+        if (handToShow.length) {
+          this.turns.selectBoardCards(handToShow, {selectable: false, dismissable: false});
+        }
+
+        yield new Timer(Settings.DEFAULT_TURN_WAIT * 3);
       } else {
         this.em.emit('log', 'a', `О, нет! ${playersToWin[i].character.name} принадлежит к другой организации!`);
+
+        yield new Timer(Settings.DEFAULT_TURN_WAIT);
         break;
       }
     }
   } //else
 
-  let winParty = sealWin ? 'seal' : caller.allegiance.org;
   let resultPromise = this.turns.once('gm.game_result');
   this.em.emit('gm.try_win', playersToWin, winParty);
   let result = yield resultPromise;

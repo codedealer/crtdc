@@ -218,6 +218,10 @@ export default class World {
           this.em.emit('gm.sync', {tokens: player.tokens - 1}, `profiles/${player.uid}`);
         });
 
+        this.em.on('gm.win.criteria.get', (playersToWin, winParty) => {
+          this.em.emit('gm.win.criteria.got', rulecoordinator.getWinCriteria(this.players, playersToWin, winParty));
+        });
+
         this.em.on('gm.try_win', (playersToWin, winParty) => {
           this.em.emit('gm.game_result', rulecoordinator.isWin(this.players, playersToWin, winParty));
         });

@@ -146,8 +146,13 @@ export default {
 
     return result;
   },
-  isWin (players, playersToWin, winParty) {
-    if (winParty === 'seal') return this._isSealWin(players, playersToWin[0]);
+  getWinCriteria (players, playersToWin, winParty) {
+    if (winParty === 'seal') {
+      return {
+        canUseBag: this.deck.length === 0,
+        requiredNum: 3
+      }
+    }
 
     let winItemName = order.org === winParty ? order.token : brotherhood.token;
     let canUseBag = this.deck.length === 0;
@@ -162,6 +167,13 @@ export default {
 
       requiredNum = actualWinnerPartyNum === Math.floor(players.length / 2) ? 2 : 3;
     }
+
+    return {winItemName, canUseBag, bagName, requiredNum}
+  },
+  isWin (players, playersToWin, winParty) {
+    if (winParty === 'seal') return this._isSealWin(players, playersToWin[0]);
+
+    let {winItemName, canUseBag, bagName, requiredNum} = this.getWinCriteria(players, playersToWin, winParty);
 
     if (!playersToWin.every(player => player.allegiance.org === winParty)) return false;
 
