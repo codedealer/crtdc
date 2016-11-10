@@ -35,13 +35,13 @@
     </div>
 
     <!-- card templates -->
-    <card-back></card-back>
+    <animation-puppet :index="0"></animation-puppet>
   </div>
 </template>
 
 <script>
 import boardPlayer from './board-player'
-import cardBack from './card-back'
+import animationPuppet from './animation-puppet'
 import contextContainer from './context-container'
 
 import EventEmitter from '../core/eventemitter'
@@ -125,7 +125,7 @@ export default {
   components: {
     boardPlayer,
     contextContainer,
-    cardBack
+    animationPuppet
   }
 }
 </script>

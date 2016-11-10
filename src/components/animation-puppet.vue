@@ -1,5 +1,5 @@
 <template>
-  <div class="card-back" :class="cardClass" v-show="show">
+  <div :class="puppetClass" v-show="show">
   </div>
 </template>
 
@@ -7,19 +7,27 @@
 import EventEmitter from '../core/eventemitter'
 
 export default {
+  props: ['index'],
   ready () {
-    this.em.on('cardback.show', player => {
+    this.em.on('cardback.show', (i, player) => {
+      if (i !== this.index || this.show) return;
+
+      this.isCard = true;
       this.origin = this.seatLookUp(player);
       console.log(this.origin);
       this.show = true;
     });
 
-    this.em.on('cardback.destination', player => {
+    this.em.on('cardback.destination', (i, player) => {
+      if (i !== this.index) return;
+
       this.destination = this.seatLookUp(player);
       console.log(this.destination);
     });
 
-    this.em.on('cardback.hide', () => {
+    this.em.on('cardback.hide', (i) => {
+      if (i !== this.index) return;
+
       this.show = false;
       this.destination = false;
     });
@@ -28,12 +36,13 @@ export default {
     return {
       em: EventEmitter.getInstance(),
       show: false,
+      isCard: false,
       origin: 0,
       destination: false
     }
   },
   computed: {
-    cardClass () {
+    puppetClass () {
       let o = {
         'origin-0': false,
         'origin-1': false,
@@ -53,8 +62,13 @@ export default {
         'destination-6': false,
         'destination-7': false,
         'destination-8': false,
-        'card-transition': false
+        'card-transition': false,
+        'card-back': false,
+        'token': false
       };
+
+      if (this.isCard) o['card-back'] = true;
+      else o['token'] = true;
 
       o[`origin-${this.origin}`] = true;
       if (this.destination !== false) {
@@ -131,8 +145,8 @@ export default {
   left: calc(100% - 135px);
 }
 .destination-0 {
-  left: 80px;
-  top: 40px;
+  left: calc(50% - 83px);
+  top: calc(50% - 98px);
 }
 .destination-1 {
   left: 80px;
