@@ -7,6 +7,7 @@ import Status from '../player/status'
 import GameStatus from './status'
 import settings from './settings'
 import Timer from './timer'
+import Animator from '../animator'
 import {seed, cutUid} from '../core/utils'
 import * as occupations from '../cards/occupations'
 
@@ -198,9 +199,12 @@ export default class World {
         });
         this.em.on('deck.draw', player => {
           let card = rulecoordinator.deck.draw();
-          if (card === false) return; //should emit anyway bc others expect event
+          if (card === false) return;
 
           player.hand.push(card);
+
+          Animator.animate('drawCard', player);
+
           this.em.emit('deck.card.got', card, player);
           //sync deck
           if (player.uid === this.user.uid) {

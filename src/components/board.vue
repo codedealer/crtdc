@@ -33,11 +33,15 @@
         <board-player :player="players[seats[7]]" :user="userPlayer" v-if="seats[7] !== false"></board-player>
       </div>
     </div>
+
+    <!-- card templates -->
+    <card-back></card-back>
   </div>
 </template>
 
 <script>
 import boardPlayer from './board-player'
+import cardBack from './card-back'
 import contextContainer from './context-container'
 
 import EventEmitter from '../core/eventemitter'
@@ -72,6 +76,7 @@ export default {
       playersToSelect: 0,
       callback: null,
       seatsToFill: {
+        0: [],
         1: [0],
         2: [1, 6],
         3: [0, 4, 5],
@@ -119,7 +124,8 @@ export default {
   },
   components: {
     boardPlayer,
-    contextContainer
+    contextContainer,
+    cardBack
   }
 }
 </script>
@@ -142,6 +148,7 @@ export default {
     justify-content: space-between;
     align-content: stretch;
     align-items: stretch;
+    position: relative;
   }
   .board-row{
     @extend %default-flex-item;
