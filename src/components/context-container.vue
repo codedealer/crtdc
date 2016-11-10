@@ -2,6 +2,7 @@
   <div class="context-field-container">
     <card-selector v-show="showCardSelector"></card-selector>
     <duel-display v-if="showDuelDisplay" :options="duelOptions"></duel-display>
+    <deck v-show="showDeck"></deck>
   </div>
 </template>
 
@@ -9,6 +10,7 @@
 import EventEmitter from '../core/eventemitter'
 import cardSelector from './card-selector'
 import duelDisplay from './duel-display'
+import deck from './deck'
 import {ModalOK} from '../modal'
 
 export default {
@@ -109,6 +111,11 @@ export default {
       duelSelectable: false
     }
   },
+  computed: {
+    showDeck () {
+      return !this.showCardSelector && !this.showDuelDisplay;
+    }
+  },
   events: {
     'card-selector' () { this.showCardSelector = false; },
     'duel-selected' (player) {
@@ -133,7 +140,8 @@ export default {
   },
   components: {
     cardSelector,
-    duelDisplay
+    duelDisplay,
+    deck
   }
 }
 </script>
