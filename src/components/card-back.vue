@@ -96,7 +96,7 @@ export default {
 }
 .origin-0 {
   top: calc(50% - 98px);
-  left: calc(50% - 39px);
+  left: calc(50% - 83px);
 }
 .origin-1 {
   left: 80px;
@@ -129,6 +129,10 @@ export default {
 .origin-8 {
   top: calc(100% - 120px);
   left: calc(100% - 135px);
+}
+.destination-0 {
+  left: 80px;
+  top: 40px;
 }
 .destination-1 {
   left: 80px;
