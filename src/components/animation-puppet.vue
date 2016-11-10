@@ -14,18 +14,25 @@ export default {
 
       this.isCard = true;
       this.origin = this.seatLookUp(player);
-      console.log(this.origin);
       this.show = true;
     });
 
-    this.em.on('cardback.destination', (i, player) => {
-      if (i !== this.index) return;
+    this.em.on('token.show', (i, player) => {
+      if (i !== this.index || this.show) return;
+
+      this.isCard = false;
+      this.origin = this.seatLookUp(player);
+      this.show = true;
+    });
+
+    this.em.on('animation.destination', (i, player) => {
+      if (i !== this.index || this.destination !== false) return;
 
       this.destination = this.seatLookUp(player);
       console.log(this.destination);
     });
 
-    this.em.on('cardback.hide', (i) => {
+    this.em.on('animation.hide', (i) => {
       if (i !== this.index) return;
 
       this.show = false;
@@ -70,11 +77,10 @@ export default {
       if (this.isCard) o['card-back'] = true;
       else o['token'] = true;
 
-      o[`origin-${this.origin}`] = true;
       if (this.destination !== false) {
         o['card-transition'] = true;
         o[`destination-${this.destination}`] = true;
-      }
+      } else o[`origin-${this.origin}`] = true;
 
       return o;
     }
@@ -104,6 +110,12 @@ export default {
   background: url(../assets/cards-back.jpg) no-repeat;
   background-size: contain;
 }
+.token {
+  height: 52px;
+  width: 52px;
+  position: absolute;
+  background-image: url(../assets/token-alone.png);
+}
 .card-transition {
   transition: all ease-out .7s;
   transform: rotate(50deg);
@@ -111,6 +123,10 @@ export default {
 .origin-0 {
   top: calc(50% - 98px);
   left: calc(50% - 83px);
+}
+.token.origin-0 {
+  top: calc(50% - 64px);
+  left: calc(50% + 28px);
 }
 .origin-1 {
   left: 80px;
@@ -147,6 +163,10 @@ export default {
 .destination-0 {
   left: calc(50% - 83px);
   top: calc(50% - 98px);
+}
+.token.destination-0 {
+  top: calc(50% - 64px);
+  left: calc(50% + 28px);
 }
 .destination-1 {
   left: 80px;

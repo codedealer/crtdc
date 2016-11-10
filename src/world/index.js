@@ -294,6 +294,9 @@ export default class World {
           if (player.tokens < data.tokens) {
             rulecoordinator.tokens--;
             player.tokens = data.tokens;
+
+            Animator.animate('getToken', player);
+
             this.em.emit('gm.got_token', player);
           } else if (player.tokens > data.tokens) {
             rulecoordinator.tokens++;

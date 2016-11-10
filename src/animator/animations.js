@@ -8,11 +8,27 @@ export function drawCard (em, player) {
     em.emit('cardback.show', 0, 0);
 
     Vue.nextTick(() => {
-      em.emit('cardback.destination', 0, player);
+      em.emit('animation.destination', 0, player);
 
       let timer = new Timer(Settings.ANIM_TRANSITION_TIME);
       timer.then(() => {
-        em.emit('cardback.hide', 0);
+        em.emit('animation.hide', 0);
+        resolve();
+      });
+    });
+  });
+}
+
+export function getToken (em, player) {
+  return new Promise((resolve, reject) => {
+    em.emit('token.show', 0, 0);
+
+    Vue.nextTick(() => {
+      em.emit('animation.destination', 0, player);
+
+      let timer = new Timer(Settings.ANIM_TRANSITION_TIME);
+      timer.then(() => {
+        em.emit('animation.hide', 0);
         resolve();
       });
     });
