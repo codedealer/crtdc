@@ -68,7 +68,8 @@ export default {
         'destination-6': false,
         'destination-7': false,
         'destination-8': false,
-        'card-transition': false,
+        'card-transition-0': false,
+        'card-transition-1': false,
         'card-back': false,
         'token': false
       };
@@ -77,7 +78,7 @@ export default {
       else o['token'] = true;
 
       if (this.destination !== false) {
-        o['card-transition'] = true;
+        o[`card-transition-${this.index}`] = true;
         o[`destination-${this.destination}`] = true;
       } else o[`origin-${this.origin}`] = true;
 
@@ -115,9 +116,13 @@ export default {
   position: absolute;
   background-image: url(../assets/token-alone.png);
 }
-.card-transition {
+.card-transition-0 {
   transition: all ease-out .7s;
   transform: rotate(50deg);
+}
+.card-transition-1 {
+  @extend .card-transition-0;
+  transform: rotate(-50deg);
 }
 .origin-0 {
   top: calc(50% - 98px);

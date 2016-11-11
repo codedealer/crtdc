@@ -30,3 +30,10 @@ export function getToken (em, player) {
 export function spendToken (em, player) {
   return atomicAnimation(em, 'token.show', 0, player, 0);
 }
+
+export function swapCards (em, player1, player2) {
+  return Promise.all([
+    atomicAnimation(em, 'cardback.show', 0, player1, player2),
+    atomicAnimation(em, 'cardback.show', 1, player2, player1)
+  ]);
+}

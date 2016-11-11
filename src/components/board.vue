@@ -36,6 +36,7 @@
 
     <!-- card templates -->
     <animation-puppet :index="0"></animation-puppet>
+    <animation-puppet :index="1"></animation-puppet>
   </div>
 </template>
 
