@@ -29,7 +29,6 @@ export default {
       if (i !== this.index || this.destination !== false) return;
 
       this.destination = this.seatLookUp(player);
-      console.log(this.destination);
     });
 
     this.em.on('animation.hide', (i) => {

@@ -3,34 +3,30 @@ import Settings from '../world/settings'
 
 import Vue from 'vue'
 
-export function drawCard (em, player) {
+function atomicAnimation (em, animationName, index, start, end) {
   return new Promise((resolve, reject) => {
-    em.emit('cardback.show', 0, 0);
+    em.emit(animationName, index, start);
 
     Vue.nextTick(() => {
-      em.emit('animation.destination', 0, player);
+      em.emit('animation.destination', index, end);
 
       let timer = new Timer(Settings.ANIM_TRANSITION_TIME);
       timer.then(() => {
-        em.emit('animation.hide', 0);
+        em.emit('animation.hide', index);
         resolve();
       });
     });
   });
 }
 
+export function drawCard (em, player) {
+  return atomicAnimation(em, 'cardback.show', 0, 0, player);
+}
+
 export function getToken (em, player) {
-  return new Promise((resolve, reject) => {
-    em.emit('token.show', 0, 0);
+  return atomicAnimation(em, 'token.show', 0, 0, player);
+}
 
-    Vue.nextTick(() => {
-      em.emit('animation.destination', 0, player);
-
-      let timer = new Timer(Settings.ANIM_TRANSITION_TIME);
-      timer.then(() => {
-        em.emit('animation.hide', 0);
-        resolve();
-      });
-    });
-  });
+export function spendToken (em, player) {
+  return atomicAnimation(em, 'token.show', 0, player, 0);
 }

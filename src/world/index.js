@@ -302,6 +302,8 @@ export default class World {
             rulecoordinator.tokens++;
             player.tokens = data.tokens;
             if (turncoordinator.queue.turns !== 0) {
+              Animator.animate('spendToken', player);
+
               this.em.emit('duel.spent_token', player);
             }
           }
