@@ -99,6 +99,7 @@ export default {
   onVote (funcName) {
     this.em.removeAllListeners('pool.change');
     if (typeof this[funcName] === 'function') this[funcName]();
+    else console.error(`${funcName} was supplied after turn`);
   },
   isCaller () { return this.queue.peekUid() === this.self.uid },
   find (uid) { return this.players.find(x => x.uid === uid) },
