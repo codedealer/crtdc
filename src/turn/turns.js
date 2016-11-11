@@ -2,6 +2,7 @@ import {ModalOK, ModalYesNo} from '../modal'
 import {objectify} from '../core/utils'
 import Timer from '../world/promise-timer'
 import Settings from '../world/settings'
+import Animator from '../animator'
 //this = turncoordinator
 
 export function vote (newPoolObject, subject, criteria, cArgs = []) {
@@ -234,6 +235,9 @@ export function* trade () {
     poolObject = yield this.pool.expect(this.queue.peekUid());
   }
 
+  //cache contractors
+  this.getContractorsFromPool(true);
+
   this.em.emit('turn.action.trade', poolObject);
 
   let callee = this.find(poolObject.actionObject.callee);
@@ -288,9 +292,9 @@ export function* trade () {
     if (this.self.uid === caller.uid) this.em.emit('deck.card.got', calleeCard);
     if (this.self.uid === callee.uid) this.em.emit('deck.card.got', callerCard);
 
+    yield Animator.animate('swapCards', caller, callee);
+
     let skipSpecials = callerCard.token === 'mirror' || calleeCard.token === 'mirror';
-    //cache contractors
-    this.getContractorsFromPool(true);
 
     if (callerCard.onTrade) {
       if (skipSpecials) {
@@ -308,8 +312,8 @@ export function* trade () {
     }
   }
 
-  if (this.isCaller()) return yield this.turns.makeVote('turn');
-  else return yield this.pool.expectAny(this.turns.vote, 'turn', 'one', caller.uid);
+  yield this.turns.makeVote('turn');
+  return yield this.pool.expectAny(this.turns.vote, 'turn', 'all');
 }
 
 export function* duel () {
