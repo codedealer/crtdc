@@ -14,7 +14,7 @@ export default {
     this.em.on('board.card-selector.init', this.onInit.bind(this));
     this.em.emit('board.card-selector.ready');
 
-    this.em.on('turn.new', () => {
+    this.em.on(['turn.new', 'selector.reset'], () => {
       this.cards = [];
       this.$dispatch('card-selector');
     });

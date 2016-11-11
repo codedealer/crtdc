@@ -269,6 +269,8 @@ export function* trade () {
     if (resultHandSelect === true) resultHandSelect = false; //trade declined
     else resultHandSelect = resultHandSelect[0].uid;
 
+    this.em.emit('selector.reset');
+
     poolObject = yield this.turns.updatePool('trade_result', caller.uid, {exchange: resultHandSelect, card: cardToTradeIn.uid});
   } else {
     poolObject = yield this.pool.expect(callee.uid);
