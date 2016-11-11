@@ -272,12 +272,8 @@ export default class World {
         this.em.on('gm.occupation.disclose', player => {
           if (player.occupation.disclosed) {
             //this is a recurring activation
-            //bc of data architecture we have to
-            //quickly hide and disclose occupation
-            //to trigger event
-            this.em.emit('gm.sync', { [player.uid]: {
-              [player.occupation.token]: false
-            } }, 'occupations');
+            this.em.emit('gm.occupation.disclosed', player);
+            return;
           }
           this.em.emit('gm.sync', { [player.uid]: {
             [player.occupation.token]: true
