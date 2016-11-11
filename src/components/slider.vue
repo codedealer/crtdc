@@ -50,6 +50,7 @@ export default {
     'slider.reset' () {
       this.displacement = 0;
       this.status.selectable = false;
+      this.$broadcast('card.reset');
     },
     'slider.select' (options) {
       this.options = options;
@@ -58,7 +59,6 @@ export default {
     },
     'slider.selected' () {
       this.status.selectable = false;
-      this.$broadcast('card.reset');
     },
     'card.selected' (card) {
       if (this.status.selectable) this.$broadcast('card.selected.confirmed', card);

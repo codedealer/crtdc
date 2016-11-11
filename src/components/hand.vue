@@ -55,6 +55,10 @@ export default {
       this.em.emit('modal.show', new ModalOK('Готов'));
     });
 
+    this.em.on('hand.reset', () => {
+      this.$broadcast('card.reset');
+    });
+
     this.em.on('turn.new', () => {
       this.$broadcast('slider.reset');
     });

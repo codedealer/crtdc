@@ -276,6 +276,8 @@ export function* trade () {
     poolObject = yield this.pool.expect(callee.uid);
   }
 
+  this.em.emit('hand.reset');
+
   //get results of trade
   this.em.emit('turn.action.trade_result', poolObject);
 

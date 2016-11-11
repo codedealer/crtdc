@@ -14,7 +14,6 @@ export default {
   data () {
     return {
       status: {
-        selectable: false,
         selected: false,
         disabled: false
       }
@@ -30,8 +29,12 @@ export default {
     'card.selected.confirmed' (card) {
       if (card.uid === this.card.uid) this.status.selected = !this.status.selected;
     },
-    'card.reset' () { this.status.disabled = false; },
+    'card.reset' () {
+      this.status.disabled = false;
+      this.status.selected = false;
+    },
     'card.init' (options) {
+      this.status.selected = false;
       if (options.isDuel) {
         if (!this.card.onDuel) this.status.disabled = true;
       } else if (options.excludeCriteria && !options.excludeCriteria(this.card)) {
@@ -51,7 +54,7 @@ export default {
     cursor: pointer;
   }
 
-  .selectable .selected .item-card{
+  .selected .item-card{
     border-color: $selected;
     animation: none;
     box-shadow: 2px 2px 8px fade-out($selected, 0.1);
