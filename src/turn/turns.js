@@ -294,6 +294,9 @@ export function* trade () {
 
     yield Animator.animate('swapCards', caller, callee);
 
+    yield this.turns.makeVote('trade.anim.finish');
+    yield this.pool.expectAny(this.turns.vote, 'trade.anim.finish', 'all');
+
     let skipSpecials = callerCard.token === 'mirror' || calleeCard.token === 'mirror';
 
     if (callerCard.onTrade) {
