@@ -23,6 +23,10 @@ export function drawCard (em, player) {
   return atomicAnimation(em, 'cardback.show', 0, 0, player);
 }
 
+export function giveCard (em, giver, taker) {
+  return atomicAnimation(em, 'cardback.show', 0, giver, taker);
+}
+
 export function getToken (em, player) {
   return atomicAnimation(em, 'token.show', 0, 0, player);
 }

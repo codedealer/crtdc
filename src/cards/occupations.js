@@ -1,4 +1,7 @@
 import rc from '../world/rulecoordinator'
+import Animator from '../animator'
+import Timer from '../world/promise-timer'
+import Settings from '../world/settings'
 import co from 'co'
 
 function * diplomatDisclose () {
@@ -28,11 +31,16 @@ function * diplomatDisclose () {
 
   if (requestedCardIndex === -1) {
     this.em.emit('log', 'g', `${callee.character.name}: Сожалею, у меня нет такой карты`);
+
+    yield new Timer(Settings.DEFAULT_TURN_WAIT);
+
     if (this.isCaller()) {
       this.em.emit('log', 'se', 'Ваш ход закончен');
       this.em.emit('turn.action', 'skip');
     }
   } else {
+    Animator.animate('giveCard', callee, caller);
+
     let requestedCard = callee.hand[requestedCardIndex];
     callee.hand.splice(requestedCardIndex, 1);
     caller.hand.push(requestedCard);
@@ -43,11 +51,15 @@ function * diplomatDisclose () {
 function * seerDisclose () {
   let poolObject;
   let caller = this.find(this.queue.peekUid());
+
   this.em.emit('log', 'g', `${caller.character.name} перемешивает колоду`);
+
   if (this.isCaller()) {
     this.em.emit('log', 'se', 'Выберите две карты. Первая из них пойдет наверх колоды, вторая будет под ней.');
+
     let itemCards = rc.deck.getDeck();
     let itemCardsOptions = {selectable: true, dismissable: false, numCards: 2};
+
     let selectedCards = yield this.turns.selectBoardCards(itemCards, itemCardsOptions);
 
     poolObject = yield this.turns.updatePool('occupation.shuffle_deck', false, { itemFirst: selectedCards[0].uid, itemSecond: selectedCards[1].uid });
@@ -135,6 +147,8 @@ function * priestDisclose () {
       poolObject = yield this.pool.expect(caller.uid);
     }
 
+    Animator.animate('giveCard', caller, priest);
+
     this.turns._giveCard(poolObject);
     this.em.emit('log', 'g', `${caller.character.name} передает карту ${priest.character.name}`);
   }
@@ -147,6 +161,8 @@ function * duelDisclose () {
   let duelist = this.actor;
   let {caller, callee} = this.getContractorsFromPool();
   this.em.emit('log', 'g', `${duelist.character.name} использует право дуэлянта. Остальные не участвуют в дуэли.`);
+
+  yield new Timer(Settings.DEFAULT_TURN_WAIT);
 
   this.players.forEach(player => {
     if (player.uid !== caller.uid && player.uid !== callee.uid) {
@@ -186,6 +202,9 @@ function * doctorDisclose () {
 
   this.em.emit('log', 'g', `Доктор ${doctor.character.name} отменяет исход дуэли`);
   this.em.emit('duel.result.cancel');
+
+  yield new Timer(Settings.DEFAULT_TURN_WAIT);
+
   this.turns.makeVote('turn.end');
 }
 

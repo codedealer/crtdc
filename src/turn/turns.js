@@ -308,6 +308,11 @@ export function* trade () {
         if (this.isCaller()) this.em.emit('log', 'a', 'Свойство карты отменено');
       } else {
         yield * callerCard.onTrade.call(this);
+
+        yield new Timer(Settings.DEFAULT_TURN_WAIT);
+
+        yield this.turns.makeVote('trade.wait.finish');
+        yield this.pool.expectAny(this.turns.vote, 'trade.wait.finish', 'all');
       }
     }
     if (calleeCard.onTrade) {
@@ -555,9 +560,15 @@ export function* duel () {
         let cardToExchangeIndex = winner.hand.findIndex(x => x.uid === prizePoolObject.actionObject.args.exchange);
         let cardToExchange = winner.hand[cardToExchangeIndex];
 
+        yield Animator.animate('swapCards', loser, winner);
+        yield this.turns.makeVote('duel.anim.finish');
+        yield this.pool.expectAny(this.turns.vote, 'duel.anim.finish', 'all');
+
         loser.hand.splice(cardToTakeIndex, 1, cardToExchange);
         winner.hand.splice(cardToExchangeIndex, 1, cardToTake);
       } else {
+        Animator.animate('giveCard', loser, winner);
+
         loser.hand.splice(cardToTakeIndex, 1);
         winner.hand.push(cardToTake);
         yield * this.turns.resolveHandLimit();
@@ -749,6 +760,9 @@ export function* resolveHandLimit () {
     let unavailablePlayers = this.players.filter(x => x.hand.length >= violator.hand.length - 1);
     let [playerToGive, cardToGive] = yield Promise.all([this.turns.selectPlayers(1, unavailablePlayers), this.turns.selectCards(1)]);
 
+    this.em.emit('selector.reset');
+    this.em.emit('hand.reset');
+
     limitPoolObject = yield this.turns.updatePool('give', playerToGive[0].uid, { card: cardToGive[0].uid });
   } else {
     limitPoolObject = yield this.pool.expect(violator.uid);
@@ -759,6 +773,8 @@ export function* resolveHandLimit () {
   let cardToGiveAwayIndex = violator.hand.findIndex(x => x.uid === limitPoolObject.actionObject.args.card);
   let cardToGiveAway = violator.hand[cardToGiveAwayIndex];
   let receiver = this.find(limitPoolObject.actionObject.callee);
+
+  Animator.animate('giveCard', violator, receiver);
 
   violator.hand.splice(cardToGiveAwayIndex, 1);
   receiver.hand.push(cardToGiveAway);
