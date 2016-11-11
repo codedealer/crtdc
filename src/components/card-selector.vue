@@ -60,7 +60,13 @@ export default {
     'card.selected' (card) {
       if (this.selectable !== true) return;
 
-      this.selectedCards.push(card);
+      let cardIndex = this.selectedCards.findIndex(c => c.uid === card.uid);
+
+      if (cardIndex === -1) {
+        this.selectedCards.push(card);
+      } else {
+        this.selectedCards.splice(cardIndex, 1);
+      }
 
       if (this.selectedCards.length === this.cardsToSelect) {
         this.selectable = false;

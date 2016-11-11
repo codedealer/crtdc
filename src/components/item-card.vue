@@ -55,8 +55,9 @@ export default {
   }
 
   .selected .item-card{
-    border-color: $selected;
-    animation: none;
+    border-color: $selected !important;
+    animation: none !important;
+    cursor: default !important;
     box-shadow: 2px 2px 8px fade-out($selected, 0.1);
   }
 
