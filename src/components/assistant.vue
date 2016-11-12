@@ -330,7 +330,7 @@ export default {
     text-shadow: 0 0 21px rgba(166, 21, 21, 0.8), 0 0 2px #000;
   }
   to {
-    color: lighten($brotherhood-primary, 10);
+    color: #c26724;
     text-shadow: 0 0 21px rgba(199, 70, 35, 0.9), 0 0px 2px #000;
   }
 }
