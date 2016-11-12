@@ -302,4 +302,15 @@ $board-shadow: inset -1px 1px 1px rgba(255,255,255,0.7), inset 1px -1px 1px rgba
 .board-player-occupation{
   color: mintcream;
 }
+
+@media (max-height: 760px) {
+  .board-player-picture {
+    height: 60px;
+    width: 60px;
+    border-width: 2px;
+  }
+  .board-player-info{
+    font-size: 10px;
+  }
+}
 </style>

@@ -312,4 +312,9 @@ export default {
 .brotherhood{
   color: $brotherhood-primary;
 }
+@media (max-height: 670px) {
+  .chat-message-box{
+    height: $control-bar-height - $chat-input-container-height - 30px;
+  }
+}
 </style>

@@ -90,6 +90,8 @@ html {
 }
 body {
   height: 100%;
+  min-width: 900px;
+  min-height: 655px;
   background: $dark-gray;
   font-family: 'Open Sans', sans-serif;
 }
@@ -159,5 +161,11 @@ header, h1, h2, h3, h4 {
 .c-widget{
   flex: 0 1 auto;
   align-self: auto;
+}
+
+@media (max-height: 670px) {
+  .control-bar {
+    height: $control-bar-height - 30px;
+  }
 }
 </style>

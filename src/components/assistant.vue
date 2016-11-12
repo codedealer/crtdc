@@ -339,4 +339,21 @@ export default {
   padding: 0 30px 30px;
   font-size: 12px;
 }
+
+@media (max-height: 670px) {
+  .i-assistant-player-container{
+    height: $control-bar-height - $assistant-deck-bar-height - 30px;
+  }
+  .i-assistant-allegiance {
+    height: 30px;
+    h3 {
+      margin: 0;
+      padding: 3px;
+      font-size: 18px;
+    }
+  }
+  .i-assistant-stats-container {
+    margin-top: 10px;
+  }
+}
 </style>

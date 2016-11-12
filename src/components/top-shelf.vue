@@ -202,4 +202,10 @@ export default {
       }
     }
   }
+
+  @media (max-height: 670px) {
+    .c-turn-buttons{
+      margin-top: 0;
+    }
+  }
 </style>

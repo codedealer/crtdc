@@ -137,4 +137,10 @@ export default {
     transition: color 200ms linear, text-shadow 500ms linear;
   }
 }
+
+@media (max-height: 670px) {
+  .c-hand-container {
+    margin-top: 0px;
+  }
+}
 </style>

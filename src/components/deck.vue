@@ -72,6 +72,7 @@ export default {
 .deck {
   height: 130px;
   width: 82px;
+  margin-top: 35px;
   background: url(../assets/deck.png) no-repeat;
   background-size: contain;
 }
