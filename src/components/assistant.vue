@@ -319,19 +319,19 @@ export default {
   }
   &.active{
     animation: none;
-    color: $active;
+    color: $brotherhood-primary;
     cursor: default;
   }
 }
 
 @keyframes occupation-flick {
   from {
-    color: $active;
-    text-shadow: 0 0 21px rgba(76, 7, 76, 0.8), 0 0 2px #2a153c;
+    color: $brotherhood-primary;
+    text-shadow: 0 0 21px rgba(166, 21, 21, 0.8), 0 0 2px #000;
   }
   to {
-    color: lighten($active, 8);
-    text-shadow: 0 0 21px rgba(118, 14, 150, 0.8), 0 0px 2px #311d47;
+    color: lighten($brotherhood-primary, 10);
+    text-shadow: 0 0 21px rgba(199, 70, 35, 0.9), 0 0px 2px #000;
   }
 }
 
