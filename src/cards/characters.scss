@@ -54,3 +54,7 @@
   @extend %character-picture;
   background-image: url('../assets/scarlett.jpg');
 }
+.spec{
+  @extend %character-picture;
+  background-image: url('../assets/spec.jpg');
+}

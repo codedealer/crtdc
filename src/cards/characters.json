@@ -50,5 +50,9 @@
   {
     "name": "Скарлетт",
     "imgClass": "scarlett"
+  },
+  {
+    "name": "Хакерман",
+    "imgClass": "spec"
   }
 ]
