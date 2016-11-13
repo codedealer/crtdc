@@ -355,5 +355,8 @@ export default {
   .i-assistant-stats-container {
     margin-top: 10px;
   }
+  .i-assistant-occupation-button {
+    top: $control-bar-height - 66px;
+  }
 }
 </style>
