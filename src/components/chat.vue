@@ -138,6 +138,7 @@ export default {
           logger.g(`${callerCharacter.character.name}: ${callee.character.name}, Пользуясь правом дипломата, требую передать мне ${cardRequested.name}`);
           break;
         default:
+          console.error(`action: ${actionObject.action}, args: ${actionObject.args}`);
           logger.g('Что-то произошло, но никто ничего не понял');
       }
     });
