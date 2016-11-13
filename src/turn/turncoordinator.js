@@ -94,6 +94,7 @@ export default {
   },
   finish () {
     this.queue.reset();
+    this.pool.resetHistory();
     this.em.emit('gm.restart', this.self);
   },
   onVote (funcName) {

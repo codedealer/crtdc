@@ -5,6 +5,7 @@ export default class {
     this.pool = obj;
     this.em = em;
     this.self = self;
+    this.poolHistory = [];
   }
   reset (keepPool) {
     return new Promise((resolve, reject) => {
@@ -26,7 +27,12 @@ export default class {
       }
     });
   }
+  resetHistory () {
+    this.poolHistory = [];
+  }
   onChange (uid, actionObject) {
+    this.poolHistory.push({uid, actionObject});
+
     if (!this.pool.hasOwnProperty(uid)) throw new Error(`Unexpected player ${uid}`);
 
     this.pool[uid] = actionObject;
