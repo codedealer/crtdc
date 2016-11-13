@@ -43,8 +43,8 @@ export default class Server {
 
         //if this is first player
         //clear chat log from prev games
-        if (!data.players || data.players.length === 0) {
-          this.em.emit('chat.flush');
+        if (!data.players || Object.keys(data.players).length === 0) {
+          this.em.emit('chat.flush.deferred');
         }
 
         let cond = !data.started &&

@@ -30,6 +30,7 @@ export default class {
     this.db = firebase.database(app);
     this.players = [];
     this.watchDog = watchDog;
+    this.flushOnConnect = false;
 
     this.em.on('gm.user.join', gameName => this.connect(gameName));
     this.em.on('chat.flush', () => {
@@ -37,10 +38,15 @@ export default class {
 
       this.roomRef.set(true);
     });
+    this.em.on('chat.flush.deferred', () => {
+      this.flushOnConnect = true;
+    });
   }
   connect (gameName) {
     this.roomName = `${gameName}_chat`;
     this.roomRef = this.db.ref(this.roomName);
+
+    if (this.flushOnConnect) this.roomRef.set(true);
 
     this.roomRef.limitToLast(1).on('child_added', this.onMessageReceive, this);
   }
