@@ -455,6 +455,8 @@ export function* duel () {
   yield this.turns.makeVote('duel.ready');
   yield this.pool.expectAny(this.turns.vote, 'duel.ready', 'all');
 
+  this.em.emit('hand.reset');
+
   //onDuelResult hook
   if (this.self.occupation.onDuelResult &&
       !this.self.occupation.disclosed) {
