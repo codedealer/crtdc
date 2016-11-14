@@ -51,3 +51,10 @@ export function character (author, ...args) {
     this.em.emit('gm.sync', {character: newCharacter.imgClass}, `profiles/${target.uid}`);
   }
 }
+
+export function history (author) {
+  if (this.self.uid === author) {
+    this.em.emit('pool.history');
+    this.em.emit('log', 's', 'История пула в консоли');
+  }
+}

@@ -31,6 +31,25 @@ export default {
     this.pool = new Pool(pool, this.em, this.self);
     this.starterPack = starterPack;
 
+    this.em.on('pool.history', () => {
+      let history = this.pool.poolHistory.map(poolObject => {
+        let obj = {
+          uid: poolObject.uid,
+          action: poolObject.actionObject.action
+        }
+
+        if (poolObject.actionObject.args) {
+          for (let [name, value] of Object.entries(poolObject.actionObject.args)) {
+            obj[name] = value;
+          }
+        }
+
+        return obj;
+      });
+
+      console.table(history);
+    });
+
     for (let [index, turn] of Object.entries(Turns)) {
       this.turns[index] = turn.bind(this);
     }
