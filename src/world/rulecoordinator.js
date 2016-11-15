@@ -14,7 +14,8 @@ const SPECIAL_CHARACTERS = {
   '-KVkOcIZlsB5_aCp4u6V': 9,
   '-KObgzBKVzAJr3xvhSGv': 10,
   '-KSwbALEpaWK9WZJka3D': 12,
-  '-KOcCE1tjuhdd5aORH5E': 11
+  '-KOcCE1tjuhdd5aORH5E': 11,
+  '-KVpiFdsesHmo_1LVDA_': 13
 }
 
 let handLimits = {
