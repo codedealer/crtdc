@@ -72,6 +72,15 @@ export let coat = {
 
     this.em.emit('deck.special_exchange', trader, 'Плащ');
 
+    let occupationPoolPromise = this.turns.once('gm.occupation_pool.got');
+    this.em.emit('gm.occupation_pool.get');
+    let occupationPool = yield occupationPoolPromise;
+
+    if (!occupationPool.length) {
+      if (this.self.uid === trader.uid) this.em.emit('log', 'se', 'Доступных профессий больше нет');
+      return Promise.resolve(true);
+    }
+
     if (this.self.uid === trader.uid) {
       this.em.emit('gm.change_ocupation.query');
 
@@ -80,10 +89,6 @@ export let coat = {
 
       if (choiceResult) {
         this.em.emit('log', 's', 'Выберите новую профессию');
-
-        let occupationPoolPromise = this.turns.once('gm.occupation_pool.got');
-        this.em.emit('gm.occupation_pool.get');
-        let occupationPool = yield occupationPoolPromise;
 
         let newOccupation = yield this.turns.selectBoardCards(occupationPool, {selectable: true, dismissable: false, numCards: 1, type: 'occupationCard'});
 

@@ -38,4 +38,21 @@ export function stripChar (msg) {
 
 export function cutUid (uid) { return uid.substr(-6); }
 
+export function setAuthorName (svMessageObject, players, self) {
+  if (!self) throw new Error('Chat has no user defined');
+
+  let player = players.find(x => x.uid === svMessageObject.author);
+  let isSelf = svMessageObject.author === self.uid;
+
+  if (player && player.character) {
+    svMessageObject.author = player.character.name;
+  } else {
+    svMessageObject.author = cutUid(svMessageObject.author);
+  }
+
+  if (isSelf) {
+    svMessageObject.author = `<span class="self">${svMessageObject.author}</span>`;
+  }
+}
+
 export { hash, seed };

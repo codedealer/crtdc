@@ -1,25 +1,8 @@
 import config from '../server-config/chat-config.json'
 import firebase from 'firebase'
-import {stripChar, cutUid} from '../core/utils'
+import {stripChar, setAuthorName} from '../core/utils'
 import watchDog from './watch-dog'
 import * as commands from './commands'
-
-function setAuthorName (svMessageObject, players, self) {
-  if (!self) throw new Error('Chat has no user defined');
-
-  let player = players.find(x => x.uid === svMessageObject.author);
-  let isSelf = svMessageObject.author === self.uid;
-
-  if (player && player.character) {
-    svMessageObject.author = player.character.name;
-  } else {
-    svMessageObject.author = cutUid(svMessageObject.author);
-  }
-
-  if (isSelf) {
-    svMessageObject.author = `<span class="self">${svMessageObject.author}</span>`;
-  }
-}
 
 export default class {
   constructor (em, self) {
