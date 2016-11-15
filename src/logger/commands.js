@@ -1,11 +1,20 @@
 //this = chat
 import characters from '../cards/characters.json'
+import {setAuthorName} from '../core/utils'
 
 export function flush (author) {
   if (this.self.uid === author) {
     this.em.emit('chat.flush');
     this.em.emit('log', 's', 'История чата удалена');
   }
+}
+
+export function uid (author) {
+  let svMessageObject = { author };
+
+  setAuthorName(svMessageObject, this.players, this.self);
+
+  this.em.emit('log', 'a', `${svMessageObject.author}: ${author}`);
 }
 
 export function team (author) {
