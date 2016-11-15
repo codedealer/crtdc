@@ -52,4 +52,11 @@ export default {
     }
   }
 }
+
+@media (max-height: 670px) {
+  .i-player-lobby li {
+    margin-bottom: 0;
+    font-size: 14px;
+  }
+}
 </style>
