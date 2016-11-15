@@ -35,7 +35,7 @@ export default {
       let history = this.pool.poolHistory.map(poolObject => {
         let obj = {
           uid: poolObject.uid,
-          callee: poolObject.callee || false,
+          callee: poolObject.actionObject.callee || false,
           action: poolObject.actionObject.action
         }
 
