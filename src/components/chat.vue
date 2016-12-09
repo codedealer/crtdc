@@ -318,4 +318,16 @@ export default {
     height: $control-bar-height - $chat-input-container-height - 30px;
   }
 }
+.emoticon {
+  display: inline-block;
+  height: 16px;
+  width: 16px;
+  margin: 0 3px;
+}
+.e-moon {
+  background: url(../assets/moon.png);
+}
+.e-newmoon {
+  background: url(../assets/newmoon.png);
+}
 </style>

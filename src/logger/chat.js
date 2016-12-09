@@ -4,6 +4,13 @@ import {stripChar, setAuthorName} from '../core/utils'
 import watchDog from './watch-dog'
 import * as commands from './commands'
 
+function filterMessage (svMessageObject) {
+  let filteredMsg = svMessageObject.msg.replace(/:\)/g, '<span class="emoticon e-moon"></span>');
+  filteredMsg = filteredMsg.replace(/\(:/g, '<span class="emoticon e-newmoon"></span>');
+
+  svMessageObject.msg = filteredMsg;
+}
+
 export default class {
   constructor (em, self) {
     let app = firebase.initializeApp(config, 'chat');
@@ -48,6 +55,8 @@ export default class {
     }
 
     setAuthorName(svMessageObject, this.players, this.self);
+
+    filterMessage(svMessageObject);
 
     this.em.emit('log', 'u', `${svMessageObject.author}: ${svMessageObject.msg}`);
   }
