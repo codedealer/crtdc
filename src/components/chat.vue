@@ -6,7 +6,7 @@
       <div class="chat-message {{* m.cssClass}}" v-else>{{{ m.message}}}</div>
     </div>
   </div>
-  <div class="chat-input-container" :v-show="showChat">
+  <div class="chat-input-container" v-show="showChat">
     <input type="text" class="chat-input" v-model="userMessage" maxlength="140" @keyup.enter.stop="sendUserMessage" tabindex="1">
     <button class="chat-btn" :class="{'disabled': chatBan}" @click.stop="sendUserMessage">Отправить</button>
   </div>
@@ -41,11 +41,11 @@ export default {
     });
 
     this.em.on('sv.player_join', uid => {
-      this.showChat = true;
+      if (this.user.uid === uid) this.showChat = true;
       logger.s(`${cutUid(uid)} присоединился к игре`);
     });
     this.em.on('sv.player_leave', uid => {
-      this.showChat = false;
+      if (this.user.uid === uid) this.showChat = false;
       logger.s(`${cutUid(uid)} вышел`);
     });
 
