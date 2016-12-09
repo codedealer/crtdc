@@ -55,6 +55,8 @@
 
 <script>
 import tc from '../turn/turncoordinator'
+import EventEmitter from '../core/eventemitter'
+import {ModalOK} from '../modal'
 
 let selectableStateCache;
 export default {
@@ -64,10 +66,13 @@ export default {
       this.status.selectable = false;
       if (this.isCallee) this.status.isDefend = true;
       else this.status.isAttack = true;
+
+      this.showSelectReadyModal();
     }
   },
   data () {
     return {
+      em: EventEmitter.getInstance(),
       status: {
         selectable: true,
         isAttack: false,
@@ -94,10 +99,15 @@ export default {
     select (player) {
       if (!this.status.selectable) return;
 
-      this.$dispatch('duel-selected', player);
-      this.status.selectable = false;
-      if (player.uid === this.options.caller.uid) this.status.isAttack = true;
-      else this.status.isDefend = true;
+      if (!this.status.isDefend && !this.status.isAttack) this.showSelectReadyModal();
+
+      if (player.uid === this.options.caller.uid) {
+        this.status.isAttack = true;
+        this.status.isDefend = false;
+      } else {
+        this.status.isAttack = false;
+        this.status.isDefend = true;
+      }
     },
     calculateOverall (duelist) {
       if (!duelist.base) return 0;
@@ -141,12 +151,39 @@ export default {
       }
 
       return {player, role};
+    },
+    showSelectReadyModal () {
+      this.em.once('modal.exec', (arg) => {
+        if (arg === null) return; //modal dismissed
+
+        this.status.selectable = false;
+
+        let playerToSupport;
+        if (this.isCallee || this.isCaller) playerToSupport = null;
+        else {
+          playerToSupport = this.status.isAttack
+                            ? this.options.caller
+                            : this.options.callee
+                            ;
+        }
+        this.$dispatch('duel-selected', playerToSupport);
+      });
+
+      this.em.emit('log', 's', 'Потвердите готовность');
+      this.em.emit('modal.show', new ModalOK('Готов'));
     }
   },
   events: {
     'duel-select-cancel' () {
       this.status.selectable = false;
       selectableStateCache = false;
+      if (!this.status.isDefend && !this.status.isAttack) this.showSelectReadyModal();
+    },
+    'duel-select-end' () {
+      this.status.selectable = false;
+      selectableStateCache = false;
+
+      this.em.emit('modal.dismiss');
     },
     'gm-restrict-turns' () {
       selectableStateCache = this.status.selectable;
@@ -182,6 +219,8 @@ export default {
         } else winner = false;
       } else {
         winner = this.options.winner;
+        if (winner === this.options.caller) this.status['win-attack'] = true;
+        else this.status['win-defence'] = true;
       }
 
       this.$dispatch('duel-result-calculated', winner);
@@ -290,11 +329,15 @@ export default {
   .caller-wrapper.isAttack{
     .duel-pic{
       border-color: darken($brotherhood-primary, 10);
+      box-shadow: none;
+      animation: none;
     }
   }
   .callee-wrapper.isDefend{
     .duel-pic{
       border-color: darken($order-primary, 10);
+      box-shadow: none;
+      animation: none;
     }
   }
   .duel-pic{

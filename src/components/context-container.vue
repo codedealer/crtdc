@@ -22,12 +22,7 @@ export default {
       this.duelCallback = cb;
       this.duelResult = {};
       this.showDuelDisplay = true;
-      if (duelOptions.self.uid === duelOptions.caller.uid ||
-          duelOptions.self.uid === duelOptions.callee.uid) {
-        this.duelCallback(null);
-      } else {
-        this.duelSelectable = true;
-      }
+      this.duelSelectable = true;
     });
     this.em.on('duel.begin', (caller, callee) => {
       if (this.duelOptions.winner) {
@@ -56,14 +51,13 @@ export default {
 
       if (this.duelOptions.self && this.duelOptions.self.uid === toExclude.uid) {
         this.$broadcast('duel-select-cancel');
-        this.duelCallback(this.duelOptions.self);
       }
     });
     this.em.on('duel.support.cancel', player => {
       this.$broadcast('duel-select-cancel');
     });
     this.em.on('duel.decide.winner', winner => {
-      this.$broadcast('duel-select-cancel');
+      this.$broadcast('duel-select-end');
 
       this.duelOptions.winner = winner;
 
@@ -94,10 +88,13 @@ export default {
       this.showCardSelector = false;
       this.showDuelDisplay = false;
     });
+    this.em.on('duel.support.dismiss', () => {
+      this.$broadcast('duel-select-end');
+    });
     this.em.on('turn.end', () => {
       this.duelSelectable = false;
-      this.$broadcast('duel-select-cancel');
-      this.duelCallback(null);
+      this.$broadcast('duel-select-end');
+      this.duelCallback({player: null, subject: 'turn.end'});
     });
   },
   data () {

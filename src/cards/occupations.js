@@ -135,7 +135,7 @@ function * priestDisclose () {
 
   this.em.emit('log', 'g', `${priest.character.name}, пользуясь правом священника останавливает дуэль`);
   if (priest.uid !== caller.uid && caller.hand.length > 1) {
-    this.em.emit('duel.support.cancel', this.self);
+    this.em.emit('duel.support.dismiss', this.self);
 
     let poolObject;
     if (this.isCaller()) {
@@ -179,7 +179,7 @@ function * alchemistDisclose () {
   if (alchemist.uid === this.self.uid) {
     //disable support voting
     //to not to confuse with winner voting
-    this.em.emit('duel.support.cancel', this.self);
+    this.em.emit('duel.support.dismiss', this.self);
     this.em.emit('log', 'se', 'Выберите победителя дуэли');
     let supporters = this.players.filter(p => {
       return p.uid !== caller.uid && p.uid !== callee.uid;

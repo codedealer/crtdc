@@ -30,7 +30,7 @@ export function vote (newPoolObject, subject, criteria, cArgs = []) {
     }
   }
 
-  if (!consensusCriteria.hasOwnProperty(criteria)) throw 'Vote criteria is invalid';
+  if (!consensusCriteria.hasOwnProperty(criteria)) throw new Error(`Vote criteria is invalid: ${criteria}`);
 
   let voted = [];
   let poolSize = 0;
@@ -113,7 +113,7 @@ export function duelVote (newPoolObject, activePlayersUid) {
 }
 
 export function cancelableVote (newPoolObject, ...args) {
-  if (!newPoolObject.actionObject || !newPoolObject.actionObject.args.subject) return this.turns.vote(newPoolObject, ...args);
+  if (!newPoolObject.actionObject || !newPoolObject.actionObject.args.subject) return this.turns.vote(newPoolObject, ...args) || this.turns.vote(newPoolObject, 'turn.end', 'all');
 
   if (newPoolObject.actionObject.args.subject === 'turn.end') {
     return this.turns.vote(newPoolObject, 'turn.end', 'all');
@@ -355,31 +355,42 @@ export function* duel () {
   }
 
   let activeSupporters = this.players.filter(x => x.uid !== caller.uid && x.uid !== callee.uid);
-  let playerToSupport = yield this.turns.initDuel({caller, callee, self: this.self, activeSupporters});
-
-  if (playerToSupport !== null) {
-    //other declare support
-    yield this.turns.makeVote('support', playerToSupport.uid);
-  }
-
-  let playersToVotePromise = this.turns.once('duel.active_players.got');
-  this.em.emit('duel.active_players.get');
-  let playersToVote = yield playersToVotePromise;
-  playersToVote = playersToVote.sort((a, b) => { return a.uid === this.self.uid ? -1 : 1 });
-  let playersUidToVote = playersToVote.map(x => x.uid);
-
-  let supportVoteResult = yield this.pool.expectAny(this.turns.cancelableVote, 'support', 'some', playersUidToVote);
+  let playerToSupportObject = yield this.turns.initDuel({caller, callee, self: this.self, activeSupporters});
 
   //onDuelBegin unhook
   if (this.self.occupation.onDuelBegin) {
     this.self.occupation.availability = false;
   }
 
+  let playerToSupport, voteSubject;
+
+  if (!playerToSupportObject) {
+    playerToSupport = playerToSupportObject;
+    voteSubject = 'support';
+  } else {
+    playerToSupport = playerToSupportObject.hasOwnProperty('player')
+                        ? playerToSupportObject.player
+                        : playerToSupportObject
+                        ;
+    voteSubject = playerToSupportObject.hasOwnProperty('subject')
+                    ? playerToSupportObject.subject
+                    : 'support'
+                    ;
+  }
+
+  yield this.turns.makeVote(voteSubject, (playerToSupport ? playerToSupport.uid : false));
+
+  let playersUidToVote = activeSupporters.map(x => x.uid);
+
+  playersUidToVote.push(caller.uid, callee.uid);
+
+  let supportVoteResult = yield this.pool.expectAny(this.turns.cancelableVote, 'support', 'some', playersUidToVote);
+
   if (supportVoteResult === 'turn.end') return 'turn';
 
-  playersToVotePromise = this.turns.once('duel.active_players.got');
+  let playersToVotePromise = this.turns.once('duel.active_players.got');
   this.em.emit('duel.active_players.get');
-  playersToVote = yield playersToVotePromise;
+  let playersToVote = yield playersToVotePromise;
   playersUidToVote = playersToVote.map(x => x.uid);
 
   let callerDuel = {
