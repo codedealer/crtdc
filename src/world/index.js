@@ -144,9 +144,17 @@ export default class World {
 
     if (this.started && !this.recurring) return;
 
-    if ((this.recurring || this.players.every(player => player.status === Status.READY)) &&
-        this.players.length >= this.settings.PLAYERS_MIN) {
-      let time = this.players.length === this.settings.PLAYERS_MAX
+    let playersReady = this.players.reduce((prev, current) => {
+      return current.status === Status.READY ? prev + 1 : prev;
+    }, 0);
+
+    let playerQuota = playersReady >= this.settings.PLAYERS_MAX;
+    if (!playerQuota) {
+      playerQuota = playersReady >= this.settings.PLAYERS_MIN && playersReady === this.players.length;
+    }
+
+    if (playerQuota) {
+      let time = playersReady >= this.settings.PLAYERS_MAX
                                     ? this.settings.PREGAME_WAIT_MIN
                                     : this.settings.PREGAME_WAIT_MAX;
 
