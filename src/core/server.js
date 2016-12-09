@@ -36,33 +36,37 @@ export default class Server {
     this.joinSimple = function(user, gameName) {
       let ref = this.db.ref(`games/${gameName}`);
 
-      ref.once('value').then(snapshot => {
-        let data = snapshot.val();
+      return new Promise((resolve, reject) => {
+        ref.once('value').then(snapshot => {
+          let data = snapshot.val();
 
-        if (data === null) throw 'Game is not found';
+          if (data === null) return reject(new Error('Game is not found'));
 
-        //if this is first player
-        //clear chat log from prev games
-        if (!data.players || Object.keys(data.players).length === 0) {
-          this.em.emit('chat.flush.deferred');
-        }
+          //if this is first player
+          //clear chat log from prev games
+          if (!data.players || Object.keys(data.players).length === 0) {
+            ref.update({started: false});
+            this.em.emit('chat.flush.deferred');
+          }
 
-        let cond = !data.started &&
-                  (!data.players || !data.players.hasOwnProperty(user.uid));
+          if (data.players && Object.values(data.players).every(x => x === Status.INGAME)) return reject(new Error('Игра уже началась. Вы не можете присоединиться'));
 
-        if (cond || (data.players && data.players.hasOwnProperty(user.uid))) {
-          ref.child('players').update({ [(() => user.uid)()]: Status.IDLE }).then(() => {
-            let playersRef = ref.child('players');
+          if (!data.players || !data.players.hasOwnProperty(user.uid)) {
+            ref.child('players').update({ [user.meta.uid]: Status.IDLE }).then(() => {
+              let playersRef = ref.child('players');
 
-            playersRef.on('child_added', this.onPlayerJoin, this);
-            playersRef.on('child_changed', this.onPlayerStatusChange, this);
-            playersRef.on('child_removed', this.onPlayerLeave, this);
+              playersRef.on('child_added', this.onPlayerJoin, this);
+              playersRef.on('child_changed', this.onPlayerStatusChange, this);
+              playersRef.on('child_removed', this.onPlayerLeave, this);
 
-            ref.child('updated').on('value', snapshot => { this.em.emit('sv.game_update_date', snapshot.val()); });
+              ref.child('updated').on('value', snapshot => { this.em.emit('sv.game_update_date', snapshot.val()); });
 
-            playersRef.child(user.uid).onDisconnect().set(null);
-          });
-        }
+              playersRef.child(user.uid).onDisconnect().set(null);
+
+              resolve();
+            });
+          } else return reject(new Error('Вы уже в игре. Игра в несколько окон запрещена'));
+        });
       });
     }
 

@@ -35,9 +35,13 @@ export default class World {
     this.server.gameExists(this.name).then(snapshot => {
       if (snapshot.exists()) {
         this.em.on('sv.game_update_date', this.onUpdatedDate.bind(this));
-        this.server.joinSimple(this.user, this.name);
+
+        this.server.joinSimple(this.user, this.name).catch(err => {
+          this.em.emit('log', 'a', err.message);
+          console.error(err);
+        });
       } else {
-        throw 'Game is not found'
+        throw new Error('Game is not found');
       }
     });
   }
@@ -74,7 +78,7 @@ export default class World {
 
       let gameObject = {
         seed: this.seed,
-        started: false,
+        started: true,
         status: GameStatus.INGAME,
         turn: GameStatus.PREGAME,
         players: rulecoordinator.init(this.seed, allowedPlayers),
