@@ -27,8 +27,8 @@ export default {
       this.showModal = true;
     });
     this.em.on(['modal.dismiss', 'turn.new'], () => {
+      this.showModal && this.em.emit('modal.exec', null);
       this.showModal = false;
-      this.em.emit('modal.exec', null);
     });
   },
   data () {
